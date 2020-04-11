@@ -20,6 +20,6 @@ tetris_state_t *tetris_get_state(void) {
 void tetris_tick(void) {
     if (test_tick >= TETRIS_PLAYFIELD_WIDTH * TETRIS_PLAYFIELD_HEIGHT)
         return;
-    tetris_state.playfield[test_tick % TETRIS_PLAYFIELD_WIDTH][test_tick / TETRIS_PLAYFIELD_WIDTH] = 1;
+    tetris_state.playfield[test_tick % TETRIS_PLAYFIELD_WIDTH][test_tick / TETRIS_PLAYFIELD_WIDTH] = TETRIS_FIELD_OCCUPIED;
     ++test_tick;
 }

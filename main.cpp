@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#define CLIENTWIDTH    200
-#define CLIENTHEIGHT   400
+#define CLIENTWIDTH    220
+#define CLIENTHEIGHT   420
 #define WINDOWSTYLE    WS_OVERLAPPEDWINDOW
 
 #define CLOCK_TICK     1000
@@ -90,7 +90,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                        the invalidating rectangle.
                        For now, just invalidate the whole client area.
                        TODO: optimize this! */
-                    InvalidateRect(hwnd, NULL, TRUE);
+                    InvalidateRect(hwnd, NULL, FALSE);
                     break;
             }
             return 0;
@@ -118,8 +118,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             hdc = GetDC(hwnd);
             RECT cr;
             GetClientRect(WindowFromDC(hdc), &cr);
-            int block_width = (cr.right - cr.left) / 10;
-            int block_height = (cr.bottom - cr.top) / 20;
+            int block_width = (cr.right - cr.left) / 11;
+            int block_height = (cr.bottom - cr.top) / 21;
             if (block_width < block_height)
                 block_size = block_width;
             else
@@ -138,22 +138,39 @@ static void draw_field(HDC hdc) {
     RECT rect;
     tetris_state_t *ts = tetris_get_state();
     HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
+    HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
 
+    // Draw margin rectangle
+    SelectObject(hdc, pen);
+    MoveToEx(hdc, block_size / 4, block_size / 4, NULL);
+    LineTo(hdc, block_size * (TETRIS_PLAYFIELD_WIDTH + 1) - block_size / 4, block_size / 4);
+    LineTo(hdc, block_size * (TETRIS_PLAYFIELD_WIDTH + 1) - block_size / 4, block_size * (TETRIS_PLAYFIELD_HEIGHT + 1) - block_size / 4);
+    LineTo(hdc, block_size / 4, block_size * (TETRIS_PLAYFIELD_HEIGHT + 1) - block_size / 4);
+    LineTo(hdc, block_size / 4, block_size / 4);
+
+    // Draw playfield
     for (i = 0; i < TETRIS_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < TETRIS_PLAYFIELD_HEIGHT; j++) {
-            if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY)
-                continue;
-            rect.left = i * block_size;
-            rect.top = j * block_size;
+            rect.left = i * block_size + block_size / 2;
+            rect.top = j * block_size + block_size / 2;
             rect.right = rect.left + block_size;
             rect.bottom = rect.top + block_size;
-            FillRect(hdc, &rect, brush);
+
+            if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY) {
+                FillRect(hdc, &rect, background_brush);
+                continue;
+            }
 
             rect.left += block_border;
             rect.top += block_border;
             rect.right -= block_border;
             rect.bottom -= block_border;
-            FillRect(hdc, &rect, background_brush);
+
+            MoveToEx(hdc, rect.left, rect.top, NULL);
+            LineTo(hdc, rect.right, rect.top);
+            LineTo(hdc, rect.right, rect.bottom);
+            LineTo(hdc, rect.left, rect.bottom);
+            LineTo(hdc, rect.left, rect.top);
 
             rect.left += block_border;
             rect.top += block_border;
@@ -164,4 +181,5 @@ static void draw_field(HDC hdc) {
     }
 
     DeleteObject(brush);
+    DeleteObject(pen);
 }
