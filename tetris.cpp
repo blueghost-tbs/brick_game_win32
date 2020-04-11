@@ -1,7 +1,8 @@
 #include "tetris.h"
 
 static tetris_state_t tetris_state;
-static int test_tick = 0;
+static int current_brick_pos_x = 0;
+static int current_brick_pos_y = 0;
 
 void tetris_init(void) {
     int i, j;
@@ -11,6 +12,8 @@ void tetris_init(void) {
             tetris_state.playfield[i][j] = TETRIS_FIELD_EMPTY;
         }
     }
+
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_OCCUPIED;
 }
 
 tetris_state_t *tetris_get_state(void) {
@@ -18,8 +21,22 @@ tetris_state_t *tetris_get_state(void) {
 }
 
 void tetris_tick(void) {
-    if (test_tick >= TETRIS_PLAYFIELD_WIDTH * TETRIS_PLAYFIELD_HEIGHT)
-        return;
-    tetris_state.playfield[test_tick % TETRIS_PLAYFIELD_WIDTH][test_tick / TETRIS_PLAYFIELD_WIDTH] = TETRIS_FIELD_OCCUPIED;
-    ++test_tick;
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_EMPTY;
+    if (current_brick_pos_y < TETRIS_PLAYFIELD_HEIGHT - 1)
+        current_brick_pos_y++;
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_OCCUPIED;
+}
+
+void tetris_right_key(void) {
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_EMPTY;
+    if (current_brick_pos_x < TETRIS_PLAYFIELD_WIDTH - 1)
+        current_brick_pos_x++;
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_OCCUPIED;
+}
+
+void tetris_left_key(void) {
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_EMPTY;
+    if (current_brick_pos_x > 0)
+        current_brick_pos_x--;
+    tetris_state.playfield[current_brick_pos_x][current_brick_pos_y] = TETRIS_FIELD_OCCUPIED;
 }
