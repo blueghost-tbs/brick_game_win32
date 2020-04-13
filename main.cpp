@@ -22,7 +22,7 @@ static int block_border = 2;
 static HBRUSH background_brush;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
-    background_brush = CreateSolidBrush(RGB(133, 147, 119));
+    background_brush = (HBRUSH)GetStockObject(GRAY_BRUSH);
 
     static TCHAR szAppName[] = TEXT("blockclass");
     HWND         hwnd;
@@ -71,8 +71,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-
-    DeleteObject(background_brush);
 
     return msg.wParam;
 }
@@ -147,7 +145,7 @@ static void draw_field(HDC hdc) {
     int i, j;
     RECT rect;
     tetris_state_t *ts = tetris_get_state();
-    HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
+    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
     HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
     int block_border_fix = block_border - block_border % 2;
 
@@ -160,7 +158,7 @@ static void draw_field(HDC hdc) {
     LineTo(hdc, block_size / 4, block_size / 4);
 
     // Draw score
-    SetBkColor(hdc, RGB(133, 147, 119));
+    SetBkMode(hdc, TRANSPARENT);
     TextOutA(hdc, block_size * (TETRIS_PLAYFIELD_WIDTH + 2), block_size / 4, "SCORE", 5);
 
     // Draw playfield
@@ -195,7 +193,6 @@ static void draw_field(HDC hdc) {
         }
     }
 
-    DeleteObject(brush);
     DeleteObject(pen);
 }
 
@@ -211,6 +208,15 @@ static void handle_keystrokes(HWND hwnd) {
 
     if (GetAsyncKeyState(VK_LEFT)) {
         tetris_left_key();
+        /* Here we have to determine
+           the invalidating rectangle.
+           For now, just invalidate the whole client area.
+           TODO: optimize this! */
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
+
+    if (GetAsyncKeyState(VK_DOWN)) {
+        tetris_down_key();
         /* Here we have to determine
            the invalidating rectangle.
            For now, just invalidate the whole client area.

@@ -15,5 +15,6 @@ tetris_state_t *tetris_get_state(void);
 void            tetris_tick(void);
 void            tetris_right_key(void);
 void            tetris_left_key(void);
+void            tetris_down_key(void);
 
 #endif /* _TETRIS_H_ */
