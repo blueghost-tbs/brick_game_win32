@@ -223,4 +223,13 @@ static void handle_keystrokes(HWND hwnd) {
            TODO: optimize this! */
         InvalidateRect(hwnd, NULL, FALSE);
     }
+
+    if (GetAsyncKeyState(VK_UP)) {
+        tetris_up_key();
+        /* Here we have to determine
+           the invalidating rectangle.
+           For now, just invalidate the whole client area.
+           TODO: optimize this! */
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
 }

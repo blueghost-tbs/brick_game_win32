@@ -1,56 +1,19 @@
 #include "tetris.h"
+#include "tetris_figures.h"
 
 static void tetris_get_next_figure(void);
 static void draw_figure(void);
 static void clear_figure(void);
 static bool is_collide(void);
+static void rotate_right(void);
+static void rotate_left(void);
 
 static tetris_state_t tetris_state;
 static int current_brick_pos_x = 5;
 static int current_brick_pos_y = -1;
+static unsigned int current_figure = 0;
+static unsigned int current_state = 0;
 static char next_figure = 1;
-
-static const char tetris_figure0[4][4] = {
-    {1, 0, 0, 0},
-    {1, 0, 0, 0},
-    {1, 0, 0, 0},
-    {1, 0, 0, 0}
-};
-
-static const char tetris_figure1[4][4] = {
-    {1, 1, 0, 0},
-    {1, 1, 0, 0},
-    {0, 0, 0, 0},
-    {0, 0, 0, 0}
-};
-
-static const char tetris_figure2[4][4] = {
-    {1, 0, 0, 0},
-    {1, 0, 0, 0},
-    {1, 1, 0, 0},
-    {0, 0, 0, 0}
-};
-
-static const char tetris_figure3[4][4] = {
-    {1, 0, 0, 0},
-    {1, 1, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 0, 0}
-};
-
-static const char tetris_figure4[4][4] = {
-    {1, 0, 0, 0},
-    {1, 1, 0, 0},
-    {1, 0, 0, 0},
-    {0, 0, 0, 0}
-};
-
-static char current_figure[4][4] = {
-    {1, 0, 0, 0},
-    {1, 0, 0, 0},
-    {1, 0, 0, 0},
-    {1, 0, 0, 0}
-};
 
 void tetris_init(void) {
     int i, j;
@@ -87,9 +50,6 @@ void tetris_tick(void) {
 }
 
 void tetris_right_key(void) {
-    if (current_brick_pos_x >= TETRIS_PLAYFIELD_WIDTH - 1)
-        return;
-
     clear_figure();
     current_brick_pos_x++;
     if (is_collide())
@@ -98,9 +58,6 @@ void tetris_right_key(void) {
 }
 
 void tetris_left_key(void) {
-    if (current_brick_pos_x <= 0)
-        return;
-
     clear_figure();
     current_brick_pos_x--;
     if (is_collide())
@@ -112,34 +69,18 @@ void tetris_down_key(void) {
     tetris_tick();
 }
 
+void tetris_up_key(void) {
+    clear_figure();
+    rotate_right();
+    if (is_collide()) {
+        rotate_left();
+    }
+    draw_figure();
+}
+
 static void tetris_get_next_figure(void) {
-    int i, j;
-
-    const char (*f)[4][4] = &tetris_figure0;
-
-    switch (next_figure) {
-        case 0:
-            f = &tetris_figure0;
-            break;
-        case 1:
-            f = &tetris_figure1;
-            break;
-        case 2:
-            f = &tetris_figure2;
-            break;
-        case 3:
-            f = &tetris_figure3;
-            break;
-        case 4:
-        default:
-            f = &tetris_figure4;
-    }
-
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
-            current_figure[i][j] = (*f)[i][j];
-        }
-    }
+    current_figure = next_figure;
+    current_state = 0;
 
     next_figure = (next_figure + 1) % 5;
 }
@@ -152,7 +93,7 @@ static void draw_figure(void) {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            if (current_figure[i][j] == 1)
+            if (tetris_figures[current_figure].states[current_state][i][j] == 1)
                 tetris_state.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = TETRIS_FIELD_OCCUPIED;
         }
     }
@@ -163,7 +104,7 @@ static void clear_figure(void) {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            if (current_figure[i][j] == 1)
+            if (tetris_figures[current_figure].states[current_state][i][j] == 1)
                 tetris_state.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = TETRIS_FIELD_EMPTY;
         }
     }
@@ -174,7 +115,9 @@ static bool is_collide(void) {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            if (current_figure[i][j] == 1) {
+            if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
+                if (current_brick_pos_x + i < 0)
+                    return true;
                 if (current_brick_pos_x + i >= TETRIS_PLAYFIELD_WIDTH)
                     return true;
                 if (current_brick_pos_y + j >= TETRIS_PLAYFIELD_HEIGHT)
@@ -186,4 +129,15 @@ static bool is_collide(void) {
     }
 
     return false;
+}
+
+static void rotate_right(void) {
+    current_state = (current_state + 1) % tetris_figures[current_figure].states_num;
+}
+
+static void rotate_left(void) {
+    if (current_state == 0)
+        current_state = tetris_figures[current_figure].states_num - 1;
+    else
+        --current_state;
 }

@@ -16,5 +16,6 @@ void            tetris_tick(void);
 void            tetris_right_key(void);
 void            tetris_left_key(void);
 void            tetris_down_key(void);
+void            tetris_up_key(void);
 
 #endif /* _TETRIS_H_ */
