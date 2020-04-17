@@ -14,6 +14,7 @@
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
 static void handle_keystrokes(HWND hwnd);
+static void invalidate_window_part(HWND hwnd);
 
 static int minimum_window_width = CLIENTWIDTH;
 static int minimum_window_height = CLIENTHEIGHT;
@@ -90,11 +91,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             switch (wParam) {
                 case TIMER_CLOCK:
                     tetris_tick();
-                    /* Here we have to determine
-                       the invalidating rectangle.
-                       For now, just invalidate the whole client area.
-                       TODO: optimize this! */
-                    InvalidateRect(hwnd, NULL, FALSE);
+                    invalidate_window_part(hwnd);
                     break;
                 case TIMER_KEYBOARD:
                     handle_keystrokes(hwnd);
@@ -199,37 +196,36 @@ static void draw_field(HDC hdc) {
 static void handle_keystrokes(HWND hwnd) {
     if (GetAsyncKeyState(VK_RIGHT)) {
         tetris_right_key();
-        /* Here we have to determine
-           the invalidating rectangle.
-           For now, just invalidate the whole client area.
-           TODO: optimize this! */
-        InvalidateRect(hwnd, NULL, FALSE);
+        invalidate_window_part(hwnd);
     }
 
     if (GetAsyncKeyState(VK_LEFT)) {
         tetris_left_key();
-        /* Here we have to determine
-           the invalidating rectangle.
-           For now, just invalidate the whole client area.
-           TODO: optimize this! */
-        InvalidateRect(hwnd, NULL, FALSE);
+        invalidate_window_part(hwnd);
     }
 
     if (GetAsyncKeyState(VK_DOWN)) {
         tetris_down_key();
-        /* Here we have to determine
-           the invalidating rectangle.
-           For now, just invalidate the whole client area.
-           TODO: optimize this! */
-        InvalidateRect(hwnd, NULL, FALSE);
+        invalidate_window_part(hwnd);
     }
 
     if (GetAsyncKeyState(VK_UP)) {
         tetris_up_key();
-        /* Here we have to determine
-           the invalidating rectangle.
-           For now, just invalidate the whole client area.
-           TODO: optimize this! */
-        InvalidateRect(hwnd, NULL, FALSE);
+        invalidate_window_part(hwnd);
+    }
+}
+
+static void invalidate_window_part(HWND hwnd) {
+    RECT rc = {0};
+
+    tetris_state_t *ts = tetris_get_state();
+    if (!(ts->rr.clean)) {
+        LONG offset = block_size / 2;
+        rc.left = offset + ts->rr.left * block_size;
+        rc.right = offset + (ts->rr.right + 1) * block_size;
+        rc.top = offset + ts->rr.top * block_size;
+        rc.bottom = offset + (ts->rr.bottom + 1) * block_size;
+        InvalidateRect(hwnd, &rc, FALSE);
+        tetris_reset_redraw_rectangle();
     }
 }

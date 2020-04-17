@@ -7,7 +7,16 @@
 #define TETRIS_FIELD_OCCUPIED    1
 
 typedef struct {
+    char left;
+    char right;
+    char top;
+    char bottom;
+    char clean;
+} redraw_rectangle_t;
+
+typedef struct {
     char playfield[TETRIS_PLAYFIELD_WIDTH][TETRIS_PLAYFIELD_HEIGHT];
+    redraw_rectangle_t rr;
 } tetris_state_t;
 
 void            tetris_init(void);
@@ -17,5 +26,6 @@ void            tetris_right_key(void);
 void            tetris_left_key(void);
 void            tetris_down_key(void);
 void            tetris_up_key(void);
+void            tetris_reset_redraw_rectangle(void);
 
 #endif /* _TETRIS_H_ */
