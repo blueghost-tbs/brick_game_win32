@@ -116,12 +116,13 @@ static void tetris_get_next_figure(void) {
 
 static void draw_figure(char need_redraw) {
     int i, j;
+    int size = tetris_figures[current_figure].size;
 
     if (current_brick_pos_y < 0)
         return;
 
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
             if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
@@ -151,9 +152,10 @@ static void draw_figure(char need_redraw) {
 
 static void clear_figure(void) {
     int i, j;
+    int size = tetris_figures[current_figure].size;
 
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
             if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
@@ -181,9 +183,10 @@ static void clear_figure(void) {
 
 static bool is_collide(void) {
     int i, j;
+    int size = tetris_figures[current_figure].size;
 
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
             if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
                 if (current_brick_pos_x + i < 0)
                     return true;
