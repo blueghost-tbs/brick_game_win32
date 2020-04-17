@@ -1,6 +1,9 @@
 #include "tetris.h"
 #include "tetris_figures.h"
 
+#include <time.h>
+#include <stdlib.h>
+
 static void tetris_get_next_figure(void);
 static void draw_figure(char need_redraw);
 static void clear_figure(void);
@@ -13,7 +16,7 @@ static int current_brick_pos_x = 5;
 static int current_brick_pos_y = -1;
 static unsigned int current_figure = 0;
 static unsigned int current_state = 0;
-static char next_figure = 1;
+static unsigned int next_figure = 1;
 
 /******************************************************************************
  * Exported functions.
@@ -28,6 +31,14 @@ void tetris_init(void) {
     }
 
     tetris_reset_redraw_rectangle();
+    srand(time(NULL));
+
+    current_figure = rand() % TETRIS_FIGURES_NUM;
+    current_state = rand() % tetris_figures[current_figure].states_num;
+
+    do {
+        next_figure = rand() % TETRIS_FIGURES_NUM;
+    } while (next_figure == current_figure);
 }
 
 tetris_state_t *tetris_get_state(void) {
@@ -109,9 +120,11 @@ void tetris_reset_redraw_rectangle(void) {
  ******************************************************************************/
 static void tetris_get_next_figure(void) {
     current_figure = next_figure;
-    current_state = 0;
+    current_state = rand() % tetris_figures[current_figure].states_num;
 
-    next_figure = (next_figure + 1) % 5;
+    do {
+        next_figure = rand() % TETRIS_FIGURES_NUM;
+    } while (next_figure == current_figure);
 }
 
 static void draw_figure(char need_redraw) {

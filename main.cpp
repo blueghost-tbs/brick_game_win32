@@ -23,7 +23,7 @@ static int block_border = 2;
 static HBRUSH background_brush;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
-    background_brush = (HBRUSH)GetStockObject(GRAY_BRUSH);
+    background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
 
     static TCHAR szAppName[] = TEXT("blockclass");
     HWND         hwnd;
@@ -143,7 +143,9 @@ static void draw_field(HDC hdc) {
     RECT rect;
     tetris_state_t *ts = tetris_get_state();
     HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    HBRUSH emptybrush = CreateSolidBrush(RGB(160, 160, 160));
     HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
+    HPEN emptypen = CreatePen(PS_SOLID, block_border, RGB(160, 160, 160));
     int block_border_fix = block_border - block_border % 2;
 
     // Draw margin rectangle
@@ -167,9 +169,9 @@ static void draw_field(HDC hdc) {
             rect.bottom = rect.top + block_size;
 
             if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY) {
-                FillRect(hdc, &rect, background_brush);
-                continue;
-            }
+                SelectObject(hdc, emptypen);
+            } else
+                SelectObject(hdc, pen);
 
             rect.left += block_border;
             rect.top += block_border;
@@ -186,11 +188,16 @@ static void draw_field(HDC hdc) {
             rect.top += block_border;
             rect.right -= block_border_fix;
             rect.bottom -= block_border_fix;
-            FillRect(hdc, &rect, brush);
+            if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY) 
+                FillRect(hdc, &rect, emptybrush);
+            else
+                FillRect(hdc, &rect, brush);
         }
     }
 
     DeleteObject(pen);
+    DeleteObject(emptypen);
+    DeleteObject(emptybrush);
 }
 
 static void handle_keystrokes(HWND hwnd) {
