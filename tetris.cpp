@@ -18,6 +18,7 @@ static unsigned int current_figure = 0;
 static unsigned int current_state = 0;
 static unsigned int next_figure = 1;
 static unsigned int next_state = 1;
+static bool first_tick_ok = 0;
 
 /******************************************************************************
  * Exported functions.
@@ -44,6 +45,7 @@ tetris_state_t *tetris_get_state(void) {
 }
 
 void tetris_tick(void) {
+    first_tick_ok = 1;
     clear_figure();
     current_brick_pos_y++;
     if (is_collide()) {
@@ -58,6 +60,9 @@ void tetris_tick(void) {
 }
 
 void tetris_right_key(void) {
+    if (!first_tick_ok)
+        return;
+
     clear_figure();
     current_brick_pos_x++;
     if (is_collide()) {
@@ -70,6 +75,9 @@ void tetris_right_key(void) {
 }
 
 void tetris_left_key(void) {
+    if (!first_tick_ok)
+        return;
+
     clear_figure();
     current_brick_pos_x--;
     if (is_collide()) {
@@ -86,6 +94,9 @@ void tetris_down_key(void) {
 }
 
 void tetris_up_key(void) {
+    if (!first_tick_ok)
+        return;
+
     clear_figure();
     rotate_right();
     if (is_collide()) {
@@ -202,6 +213,8 @@ static bool is_collide(void) {
         for (j = 0; j < size; j++) {
             if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
                 if (current_brick_pos_x + i < 0)
+                    return true;
+                if (current_brick_pos_y + j < 0)
                     return true;
                 if (current_brick_pos_x + i >= TETRIS_PLAYFIELD_WIDTH)
                     return true;
