@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-static void tetris_get_next_figure(void);
+static int  tetris_get_next_figure(void);
 static void draw_figure(char need_redraw);
 static void clear_figure(void);
 static bool is_collide(void);
@@ -17,6 +17,7 @@ static int current_brick_pos_y = -1;
 static unsigned int current_figure = 0;
 static unsigned int current_state = 0;
 static unsigned int next_figure = 1;
+static unsigned int next_state = 1;
 
 /******************************************************************************
  * Exported functions.
@@ -33,12 +34,9 @@ void tetris_init(void) {
     tetris_reset_redraw_rectangle();
     srand(time(NULL));
 
-    current_figure = rand() % TETRIS_FIGURES_NUM;
-    current_state = rand() % tetris_figures[current_figure].states_num;
-
-    do {
-        next_figure = rand() % TETRIS_FIGURES_NUM;
-    } while (next_figure == current_figure);
+    next_figure = rand() % TETRIS_FIGURES_NUM;
+    next_state = rand() % tetris_figures[next_figure].states_num;
+    current_brick_pos_y = tetris_get_next_figure() - 1;
 }
 
 tetris_state_t *tetris_get_state(void) {
@@ -46,25 +44,17 @@ tetris_state_t *tetris_get_state(void) {
 }
 
 void tetris_tick(void) {
-    if (current_brick_pos_y == TETRIS_PLAYFIELD_HEIGHT - 1) {
-        tetris_get_next_figure();
-        current_brick_pos_y = 0;
+    clear_figure();
+    current_brick_pos_y++;
+    if (is_collide()) {
+        current_brick_pos_y--;
+        tetris_reset_redraw_rectangle();
+        draw_figure(0);
+        current_brick_pos_y = tetris_get_next_figure();
         current_brick_pos_x = 5;
-        draw_figure(1);
-    } else {
-        clear_figure();
-        current_brick_pos_y++;
-        if (is_collide()) {
-            current_brick_pos_y--;
-            tetris_reset_redraw_rectangle();
-            draw_figure(0);
-            tetris_get_next_figure();
-            current_brick_pos_y = 0;
-            current_brick_pos_x = 5;
-            draw_figure(1);
-        } else
-            draw_figure(1);
     }
+
+    draw_figure(1);
 }
 
 void tetris_right_key(void) {
@@ -118,21 +108,31 @@ void tetris_reset_redraw_rectangle(void) {
 /******************************************************************************
  * Static functions.
  ******************************************************************************/
-static void tetris_get_next_figure(void) {
+static int tetris_get_next_figure(void) {
+    int i, j;
     current_figure = next_figure;
-    current_state = rand() % tetris_figures[current_figure].states_num;
+    current_state = next_state;
 
     do {
         next_figure = rand() % TETRIS_FIGURES_NUM;
     } while (next_figure == current_figure);
+
+    next_state = rand() % tetris_figures[next_figure].states_num;
+
+    for (i = 0; i < tetris_figures[current_figure].size; i++) {
+        for (j = 0; j < tetris_figures[current_figure].size; j++) {
+            if (tetris_figures[current_figure].states[current_state][j][i] == 1)
+                goto exit;
+        }
+    }
+
+exit:
+    return -i;
 }
 
 static void draw_figure(char need_redraw) {
     int i, j;
     int size = tetris_figures[current_figure].size;
-
-    if (current_brick_pos_y < 0)
-        return;
 
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
