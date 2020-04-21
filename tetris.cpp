@@ -144,14 +144,14 @@ void tetris_game_loop(void) {
     unsigned int t = GetTickCount();
 
     if (left_key_is_pressed) {
-        if (t > left_key_press_start_time + 100 || left_key_repeat == 0) {
+        if (t > left_key_press_start_time + 50 || left_key_repeat == 0) {
             if (left_key_repeat != 1)
                 tetris_move_left();
             left_key_press_start_time = t;
             left_key_repeat++;
         }
     } else if (right_key_is_pressed) {
-        if (t > right_key_press_start_time + 100 || right_key_repeat == 0) {
+        if (t > right_key_press_start_time + 50 || right_key_repeat == 0) {
             if (right_key_repeat != 1)
                 tetris_move_right();
             right_key_press_start_time = t;
