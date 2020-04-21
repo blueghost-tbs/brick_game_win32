@@ -7,7 +7,9 @@
 #define WINDOWSTYLE    WS_OVERLAPPEDWINDOW
 
 #define CLOCK_TICK     1000
+#define GAMELOOP_TICK  50
 #define TIMER_CLOCK    1
+#define GAMELOOP_CLOCK 2
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
@@ -65,16 +67,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     ShowWindow(hwnd, iCmdShow);
     UpdateWindow(hwnd);
 
-    while (msg.message != WM_QUIT) {
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        } else {
-            /* game loop goes here */
-            tetris_game_loop();
-            invalidate_window_part(hwnd);
-            Sleep(30);
-        }
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
     }
 
     return msg.wParam;
@@ -88,12 +83,17 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         case WM_CREATE:
             tetris_init();
             SetTimer(hwnd, TIMER_CLOCK, CLOCK_TICK, NULL);
+            SetTimer(hwnd, GAMELOOP_CLOCK, GAMELOOP_TICK, NULL);
             return 0;
 
         case WM_TIMER:
             switch (wParam) {
                 case TIMER_CLOCK:
                     tetris_tick();
+                    invalidate_window_part(hwnd);
+                    break;
+                case GAMELOOP_CLOCK:
+                    tetris_game_loop();
                     invalidate_window_part(hwnd);
                     break;
             }
@@ -107,6 +107,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
         case WM_DESTROY:
             KillTimer(hwnd, TIMER_CLOCK);
+            KillTimer(hwnd, GAMELOOP_CLOCK);
             PostQuitMessage(0);
             return 0;
 

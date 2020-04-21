@@ -14,6 +14,8 @@ static void rotate_left(void);
 static void tetris_move_right(void);
 static void tetris_move_left(void);
 static void tetris_up_key(void);
+static int search_full_line(void);
+static void clean_line(int line);
 
 static tetris_state_t tetris_state;
 static int current_brick_pos_x = 5;
@@ -61,6 +63,7 @@ tetris_state_t *tetris_get_state(void) {
 
 void tetris_tick(void) {
     char it_was_clean = tetris_state.rr.clean = 1;
+    int line = -1;
 
     clear_figure();
     current_brick_pos_y++;
@@ -69,6 +72,13 @@ void tetris_tick(void) {
         if (it_was_clean)
             tetris_reset_redraw_rectangle();
         draw_figure(0);
+
+        do {
+            line = search_full_line();
+            if (line > 0)
+                clean_line(line);
+        } while (line > 0);
+
         current_brick_pos_y = tetris_get_next_figure();
         current_brick_pos_x = 5;
         if (down_key_is_pressed)
@@ -92,15 +102,11 @@ void tetris_left_key_press(void) {
 
 void tetris_right_key_release(void) {
     right_key_is_pressed = 0;
-    if (right_key_repeat == 0)
-        tetris_move_right();
     right_key_repeat = 0;
 }
 
 void tetris_left_key_release(void) {
     left_key_is_pressed = 0;
-    if (left_key_repeat == 0)
-        tetris_move_left();
     left_key_repeat = 0;
 }
 
@@ -138,14 +144,14 @@ void tetris_game_loop(void) {
     unsigned int t = GetTickCount();
 
     if (left_key_is_pressed) {
-        if (t > left_key_press_start_time + 100) {
+        if (t > left_key_press_start_time + 100 || left_key_repeat == 0) {
             if (left_key_repeat != 1)
                 tetris_move_left();
             left_key_press_start_time = t;
             left_key_repeat++;
         }
     } else if (right_key_is_pressed) {
-        if (t > right_key_press_start_time + 100) {
+        if (t > right_key_press_start_time + 100 || right_key_repeat == 0) {
             if (right_key_repeat != 1)
                 tetris_move_right();
             right_key_press_start_time = t;
@@ -329,5 +335,56 @@ static void tetris_up_key(void) {
         draw_figure(0);
     } else {
         draw_figure(1);
+    }
+}
+
+static int search_full_line(void) {
+    int i, j;
+
+    for (i = TETRIS_PLAYFIELD_HEIGHT - 1; i >= 0; i--) {
+        for (j = 0; j < TETRIS_PLAYFIELD_WIDTH; j++) {
+            if (tetris_state.playfield[j][i] == TETRIS_FIELD_EMPTY)
+                break;
+        }
+        if (j == TETRIS_PLAYFIELD_WIDTH) {
+            // Full line found!
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static void clean_line(int line) {
+    int i, j, empty;
+
+    // Move every not empty line down by 1.
+    for (i = line - 1; i >= 0; i--) {
+        empty = 1;
+        for (j = 0; j < TETRIS_PLAYFIELD_WIDTH; j++) {
+            if (tetris_state.playfield[j][i] != TETRIS_FIELD_EMPTY)
+                empty = 0;
+            tetris_state.playfield[j][i + 1] = tetris_state.playfield[j][i];
+        }
+        if (empty)
+            break;
+    }
+
+    if (i == -1) {
+        // Clean the top line.
+        for (j = 0; j < TETRIS_PLAYFIELD_WIDTH; j++)
+            tetris_state.playfield[j][0] = TETRIS_FIELD_EMPTY;
+    }
+
+    tetris_state.rr.right = TETRIS_PLAYFIELD_WIDTH - 1;
+    tetris_state.rr.left = 0;
+
+    if (i + 1 < tetris_state.rr.top) {
+        tetris_state.rr.top = i + 1;
+        tetris_state.rr.clean = 0;
+    }
+    if (line > tetris_state.rr.bottom) {
+        tetris_state.rr.bottom = line;
+        tetris_state.rr.clean = 0;
     }
 }
