@@ -7,13 +7,10 @@
 #define WINDOWSTYLE    WS_OVERLAPPEDWINDOW
 
 #define CLOCK_TICK     1000
-#define KEYBOARD_TICK  100
 #define TIMER_CLOCK    1
-#define TIMER_KEYBOARD 2
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
-static void handle_keystrokes(HWND hwnd);
 static void invalidate_window_part(HWND hwnd);
 
 static int minimum_window_width = CLIENTWIDTH;
@@ -68,9 +65,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     ShowWindow(hwnd, iCmdShow);
     UpdateWindow(hwnd);
 
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+    while (msg.message != WM_QUIT) {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
+            /* game loop goes here */
+            tetris_game_loop();
+            invalidate_window_part(hwnd);
+            Sleep(30);
+        }
     }
 
     return msg.wParam;
@@ -84,7 +88,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         case WM_CREATE:
             tetris_init();
             SetTimer(hwnd, TIMER_CLOCK, CLOCK_TICK, NULL);
-            SetTimer(hwnd, TIMER_KEYBOARD, KEYBOARD_TICK, NULL);
             return 0;
 
         case WM_TIMER:
@@ -92,9 +95,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                 case TIMER_CLOCK:
                     tetris_tick();
                     invalidate_window_part(hwnd);
-                    break;
-                case TIMER_KEYBOARD:
-                    handle_keystrokes(hwnd);
                     break;
             }
             return 0;
@@ -107,7 +107,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 
         case WM_DESTROY:
             KillTimer(hwnd, TIMER_CLOCK);
-            KillTimer(hwnd, TIMER_KEYBOARD);
             PostQuitMessage(0);
             return 0;
 
@@ -132,6 +131,28 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             block_border = block_size / 10;
             return 0;
         }
+
+        case WM_KEYDOWN:
+            if (wParam == VK_RIGHT)
+                tetris_right_key_press();
+            else if (wParam == VK_LEFT)
+                tetris_left_key_press();
+            else if (wParam == VK_UP)
+                tetris_up_key_press();
+            else if (wParam == VK_DOWN)
+                tetris_down_key_press();
+            return 0;
+
+        case WM_KEYUP:
+            if (wParam == VK_RIGHT)
+                tetris_right_key_release();
+            else if (wParam == VK_LEFT)
+                tetris_left_key_release();
+            else if (wParam == VK_UP)
+                tetris_up_key_release();
+            else if (wParam == VK_DOWN)
+                tetris_down_key_release();
+            return 0;
 
     }
 
@@ -198,28 +219,6 @@ static void draw_field(HDC hdc) {
     DeleteObject(pen);
     DeleteObject(emptypen);
     DeleteObject(emptybrush);
-}
-
-static void handle_keystrokes(HWND hwnd) {
-    if (GetAsyncKeyState(VK_RIGHT)) {
-        tetris_right_key();
-        invalidate_window_part(hwnd);
-    }
-
-    if (GetAsyncKeyState(VK_LEFT)) {
-        tetris_left_key();
-        invalidate_window_part(hwnd);
-    }
-
-    if (GetAsyncKeyState(VK_DOWN)) {
-        tetris_down_key();
-        invalidate_window_part(hwnd);
-    }
-
-    if (GetAsyncKeyState(VK_UP)) {
-        tetris_up_key();
-        invalidate_window_part(hwnd);
-    }
 }
 
 static void invalidate_window_part(HWND hwnd) {

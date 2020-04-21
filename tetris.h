@@ -19,13 +19,18 @@ typedef struct {
     redraw_rectangle_t rr;
 } tetris_state_t;
 
-void            tetris_init(void);
 tetris_state_t *tetris_get_state(void);
-void            tetris_tick(void);
-void            tetris_right_key(void);
-void            tetris_left_key(void);
-void            tetris_down_key(void);
-void            tetris_up_key(void);
-void            tetris_reset_redraw_rectangle(void);
+void tetris_init(void);
+void tetris_tick(void);
+void tetris_right_key_press(void);
+void tetris_left_key_press(void);
+void tetris_right_key_release(void);
+void tetris_left_key_release(void);
+void tetris_up_key_press(void);
+void tetris_up_key_release(void);
+void tetris_down_key_press(void);
+void tetris_down_key_release(void);
+void tetris_reset_redraw_rectangle(void);
+void tetris_game_loop(void);
 
 #endif /* _TETRIS_H_ */
