@@ -120,17 +120,17 @@ tetris_figure_t tetris_figure_3_mirror = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figures[TETRIS_FIGURES_NUM] = {
-    tetris_figure_0,
-    tetris_figure_1,
-    tetris_figure_2,
-    tetris_figure_3,
-    tetris_figure_4,
-    tetris_figure_0, // the mirror is the same
-    tetris_figure_1, // the mirror is the same
-    tetris_figure_2_mirror,
-    tetris_figure_3_mirror,
-    tetris_figure_4  // the mirror is the same
+tetris_figure_t *tetris_figures[TETRIS_FIGURES_NUM] = {
+    &tetris_figure_0,
+    &tetris_figure_1,
+    &tetris_figure_2,
+    &tetris_figure_3,
+    &tetris_figure_4,
+    &tetris_figure_0, // the mirror is the same
+    &tetris_figure_1, // the mirror is the same
+    &tetris_figure_2_mirror,
+    &tetris_figure_3_mirror,
+    &tetris_figure_4  // the mirror is the same
 };
 
 #endif /* _TETRIS_FIGURES_H_*/

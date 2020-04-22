@@ -53,7 +53,7 @@ void tetris_init(void) {
     srand(time(NULL));
 
     next_figure = rand() % TETRIS_FIGURES_NUM;
-    next_state = rand() % tetris_figures[next_figure].states_num;
+    next_state = rand() % tetris_figures[next_figure]->states_num;
     current_brick_pos_y = tetris_get_next_figure() - 1;
 }
 
@@ -178,11 +178,11 @@ static int tetris_get_next_figure(void) {
         next_figure = rand() % TETRIS_FIGURES_NUM;
     } while (next_figure == current_figure);
 
-    next_state = rand() % tetris_figures[next_figure].states_num;
+    next_state = rand() % tetris_figures[next_figure]->states_num;
 
-    for (i = tetris_figures[current_figure].size; i > 0; i--) {
-        for (j = 0; j < tetris_figures[current_figure].size; j++) {
-            if (tetris_figures[current_figure].states[current_state][j][i] == 1)
+    for (i = tetris_figures[current_figure]->size; i > 0; i--) {
+        for (j = 0; j < tetris_figures[current_figure]->size; j++) {
+            if (tetris_figures[current_figure]->states[current_state][j][i] == 1)
                 goto exit;
         }
     }
@@ -193,13 +193,13 @@ exit:
 
 static void draw_figure(char need_redraw) {
     int i, j;
-    int size = tetris_figures[current_figure].size;
+    int size = tetris_figures[current_figure]->size;
 
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
-            if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
+            if (tetris_figures[current_figure]->states[current_state][i][j] == 1) {
                 tetris_state.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = TETRIS_FIELD_OCCUPIED;
                 if (!need_redraw)
                     continue;
@@ -226,13 +226,13 @@ static void draw_figure(char need_redraw) {
 
 static void clear_figure(void) {
     int i, j;
-    int size = tetris_figures[current_figure].size;
+    int size = tetris_figures[current_figure]->size;
 
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
-            if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
+            if (tetris_figures[current_figure]->states[current_state][i][j] == 1) {
                 tetris_state.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = TETRIS_FIELD_EMPTY;
                 if (current_brick_pos_x + i < tetris_state.rr.left) {
                     tetris_state.rr.left = current_brick_pos_x + i;
@@ -257,11 +257,11 @@ static void clear_figure(void) {
 
 static bool is_collide(void) {
     int i, j;
-    int size = tetris_figures[current_figure].size;
+    int size = tetris_figures[current_figure]->size;
 
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
-            if (tetris_figures[current_figure].states[current_state][i][j] == 1) {
+            if (tetris_figures[current_figure]->states[current_state][i][j] == 1) {
                 if (current_brick_pos_x + i < 0)
                     return true;
                 if (current_brick_pos_x + i >= TETRIS_PLAYFIELD_WIDTH)
@@ -280,12 +280,12 @@ static bool is_collide(void) {
 }
 
 static void rotate_right(void) {
-    current_state = (current_state + 1) % tetris_figures[current_figure].states_num;
+    current_state = (current_state + 1) % tetris_figures[current_figure]->states_num;
 }
 
 static void rotate_left(void) {
     if (current_state == 0)
-        current_state = tetris_figures[current_figure].states_num - 1;
+        current_state = tetris_figures[current_figure]->states_num - 1;
     else
         --current_state;
 }
@@ -321,7 +321,7 @@ static void tetris_move_left(void) {
 }
 
 static void tetris_up_key(void) {
-    if (tetris_figures[current_figure].states_num == 1)
+    if (tetris_figures[current_figure]->states_num == 1)
         return;
 
     char it_was_clean = tetris_state.rr.clean = 1;
