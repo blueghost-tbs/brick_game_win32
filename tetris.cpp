@@ -62,7 +62,7 @@ tetris_state_t *tetris_get_state(void) {
 }
 
 void tetris_tick(void) {
-    char it_was_clean = tetris_state.rr.clean = 1;
+    char it_was_clean = tetris_state.rr.clean;
     int line = -1;
 
     clear_figure();
@@ -291,7 +291,7 @@ static void rotate_left(void) {
 }
 
 static void tetris_move_right(void) {
-    char it_was_clean = tetris_state.rr.clean = 1;
+    char it_was_clean = tetris_state.rr.clean;
 
     clear_figure();
     current_brick_pos_x++;
@@ -306,7 +306,7 @@ static void tetris_move_right(void) {
 }
 
 static void tetris_move_left(void) {
-    char it_was_clean = tetris_state.rr.clean = 1;
+    char it_was_clean = tetris_state.rr.clean;
 
     clear_figure();
     current_brick_pos_x--;
@@ -324,7 +324,7 @@ static void tetris_up_key(void) {
     if (tetris_figures[current_figure]->states_num == 1)
         return;
 
-    char it_was_clean = tetris_state.rr.clean = 1;
+    char it_was_clean = tetris_state.rr.clean;
 
     clear_figure();
     rotate_right();
