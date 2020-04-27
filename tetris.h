@@ -17,11 +17,12 @@ typedef struct {
 typedef struct {
     char playfield[TETRIS_PLAYFIELD_WIDTH][TETRIS_PLAYFIELD_HEIGHT];
     redraw_rectangle_t rr;
+    unsigned long score;
+    char level;
 } tetris_state_t;
 
 tetris_state_t *tetris_get_state(void);
 void tetris_init(void);
-void tetris_tick(void);
 void tetris_right_key_press(void);
 void tetris_left_key_press(void);
 void tetris_right_key_release(void);
