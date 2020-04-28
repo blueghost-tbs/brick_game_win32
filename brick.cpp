@@ -125,6 +125,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             block_border = block_size / 10;
             if (block_border < 2)
                 block_border = 2;
+            ReleaseDC(hwnd, hdc);
             return 0;
         }
 
