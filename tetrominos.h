@@ -1,15 +1,15 @@
-#ifndef _TETRIS_FIGURES_H_
-#define _TETRIS_FIGURES_H_
+#ifndef _TETROMINOS_H_
+#define _TETROMINOS_H_
 
-#define TETRIS_FIGURES_NUM 10
+#define TETROMINOS_NUM 7
 
 typedef struct {
     char size;
     char states_num;
     char states[4][4][4];
-} tetris_figure_t;
+} tetromino_t;
 
-tetris_figure_t tetris_figure_0 = {
+tetromino_t tetromino_0 = {
     2,
     1,
     {{{1, 1, 0, 0},
@@ -18,7 +18,7 @@ tetris_figure_t tetris_figure_0 = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_1 = {
+tetromino_t tetromino_1 = {
     4,
     2,
     {{{0, 1, 0, 0},
@@ -31,7 +31,7 @@ tetris_figure_t tetris_figure_1 = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_2 = {
+tetromino_t tetromino_2 = {
     3,
     4,
     {{{0, 1, 0, 0},
@@ -52,7 +52,7 @@ tetris_figure_t tetris_figure_2 = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_3 = {
+tetromino_t tetromino_3 = {
     3,
     2,
     {{{1, 0, 0, 0},
@@ -65,7 +65,7 @@ tetris_figure_t tetris_figure_3 = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_4 = {
+tetromino_t tetromino_4 = {
     3,
     4,
     {{{0, 1, 0, 0},
@@ -86,7 +86,7 @@ tetris_figure_t tetris_figure_4 = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_2_mirror = {
+tetromino_t tetromino_5 = {
     3,
     4,
     {{{0, 1, 0, 0},
@@ -107,7 +107,7 @@ tetris_figure_t tetris_figure_2_mirror = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t tetris_figure_3_mirror = {
+tetromino_t tetromino_6 = {
     3,
     2,
     {{{0, 1, 0, 0},
@@ -120,17 +120,14 @@ tetris_figure_t tetris_figure_3_mirror = {
       {0, 0, 0, 0}}}
 };
 
-tetris_figure_t *tetris_figures[TETRIS_FIGURES_NUM] = {
-    &tetris_figure_0,
-    &tetris_figure_1,
-    &tetris_figure_2,
-    &tetris_figure_3,
-    &tetris_figure_4,
-    &tetris_figure_0, // the mirror is the same
-    &tetris_figure_1, // the mirror is the same
-    &tetris_figure_2_mirror,
-    &tetris_figure_3_mirror,
-    &tetris_figure_4  // the mirror is the same
+tetromino_t *tetrominos[TETROMINOS_NUM] = {
+    &tetromino_0,
+    &tetromino_1,
+    &tetromino_2,
+    &tetromino_3,
+    &tetromino_4,
+    &tetromino_5,
+    &tetromino_6
 };
 
-#endif /* _TETRIS_FIGURES_H_*/
+#endif /* _TETROMINOS_H_*/
