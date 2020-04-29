@@ -18,7 +18,10 @@ typedef struct {
     char playfield[TETRIS_PLAYFIELD_WIDTH][TETRIS_PLAYFIELD_HEIGHT];
     redraw_rectangle_t rr;
     unsigned long score;
-    char level;
+    char score_changed;
+    int level;
+    char level_changed;
+    char lines_since_level_increase;
 } tetris_state_t;
 
 tetris_state_t *tetris_get_state(void);

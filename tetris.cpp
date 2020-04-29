@@ -58,6 +58,21 @@ static struct {
  * 4 lines - 800 points
  */
 
+#define LEVEL_SPEEDS_NUM 11
+const static int level_speed[LEVEL_SPEEDS_NUM] {
+    1000,
+    900,
+    800,
+    700,
+    600,
+    500,
+    400,
+    300,
+    200,
+    100,
+    50
+};
+
 /******************************************************************************
  * Exported functions.
  ******************************************************************************/
@@ -71,7 +86,9 @@ void tetris_init(void) {
     }
 
     tetris_state.score = 0;
+    tetris_state.score_changed = 0;
     tetris_state.level = 1;
+    tetris_state.level_changed = 0;
 
     tetris_reset_redraw_rectangle();
     srand(time(NULL));
@@ -165,6 +182,14 @@ void tetris_game_loop(void) {
                 tetris_state.score += 800 * tetris_state.level;
                 break;
         }
+        tetris_state.score_changed = 1;
+        tetris_state.lines_since_level_increase += ts.cleared_lines;
+
+        if (tetris_state.lines_since_level_increase >= 10) {
+            tetris_state.lines_since_level_increase = 0;
+            tetris_state.level++;
+            tetris_state.level_changed = 1;
+        }
 
         ts.cleared_lines = 0;
         ts.state = TS_NEXTFGAFTER_ANIMATION;
@@ -172,8 +197,15 @@ void tetris_game_loop(void) {
     }
 
     unsigned int t = GetTickCount();
+    int speed = 1000;
+    if (tetris_state.level < 1)
+        speed = level_speed[0];
+    else if (tetris_state.level > LEVEL_SPEEDS_NUM)
+        speed = level_speed[LEVEL_SPEEDS_NUM - 1];
+    else
+        speed = level_speed[tetris_state.level - 1];
 
-    if (t > gravity_timer + 1000) {
+    if (t > gravity_timer + speed) {
         tetris_tick();
         gravity_timer = t;
     }

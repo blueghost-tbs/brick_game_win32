@@ -2,6 +2,7 @@
 #include "resource.h"
 
 #include <windows.h>
+#include <stdio.h>
 
 #define CLIENTWIDTH    330 // 220 playfield + 110 scoreboard
 #define CLIENTHEIGHT   420
@@ -19,6 +20,11 @@ static int minimum_window_height = CLIENTHEIGHT;
 static int block_size = 20;
 static int block_border = 2;
 static HBRUSH background_brush;
+
+#define SCORE_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
+#define SCORE_TEXT_Y  (block_size / 4)
+#define LEVEL_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
+#define LEVEL_TEXT_Y  (block_size / 4) + 40
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
     background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
@@ -176,6 +182,8 @@ static void draw_field(HDC hdc) {
     HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
     HPEN emptypen = CreatePen(PS_SOLID, block_border, RGB(160, 160, 160));
     int block_border_fix = block_border - block_border % 2;
+    char score[32] = {'\0',};
+    char level[32] = {'\0',};
 
     // Draw margin rectangle
     SelectObject(hdc, pen);
@@ -187,7 +195,14 @@ static void draw_field(HDC hdc) {
 
     // Draw score
     SetBkMode(hdc, TRANSPARENT);
-    TextOutA(hdc, block_size * (TETRIS_PLAYFIELD_WIDTH + 2), block_size / 4, "SCORE", 5);
+    TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y, "SCORE", 5);
+    snprintf(score, 31, "%lu", ts->score);
+    TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + 20, score, strlen(score));
+
+    // Draw level
+    TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
+    snprintf(level, 31, "%d", ts->level);
+    TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + 20, level, strlen(level));
 
     // Draw playfield
     for (i = 0; i < TETRIS_PLAYFIELD_WIDTH; i++) {
@@ -241,5 +256,23 @@ static void invalidate_window_part(HWND hwnd) {
         rc.bottom = offset + (ts->rr.bottom + 1) * block_size;
         InvalidateRect(hwnd, &rc, FALSE);
         tetris_reset_redraw_rectangle();
+    }
+
+    if (ts->score_changed) {
+        rc.left = SCORE_TEXT_X;
+        rc.right = SCORE_TEXT_X + 100;
+        rc.top = SCORE_TEXT_Y + 20;
+        rc.bottom = SCORE_TEXT_Y + 40;
+        InvalidateRect(hwnd, &rc, TRUE);
+        ts->score_changed = 0;
+    }
+
+    if (ts->level_changed) {
+        rc.left = LEVEL_TEXT_X;
+        rc.right = LEVEL_TEXT_X + 100;
+        rc.top = LEVEL_TEXT_Y + 20;
+        rc.bottom = LEVEL_TEXT_Y + 40;
+        InvalidateRect(hwnd, &rc, TRUE);
+        ts->level_changed = 0;
     }
 }
