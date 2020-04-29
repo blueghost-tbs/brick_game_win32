@@ -110,7 +110,7 @@ SOURCE=.\tetris.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\tetris_figures.h
+SOURCE=.\tetrominos.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
