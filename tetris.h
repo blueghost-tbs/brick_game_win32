@@ -36,5 +36,6 @@ void tetris_down_key_press(void);
 void tetris_down_key_release(void);
 void tetris_reset_redraw_rectangle(void);
 void tetris_game_loop(void);
+void tetris_new_game(void);
 
 #endif /* _TETRIS_H_ */

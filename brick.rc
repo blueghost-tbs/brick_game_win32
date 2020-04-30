@@ -4,10 +4,11 @@ BRICKGAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Exit",    IDM_FILE_EXIT
+        MENUITEM "&New game", IDM_FILE_NEW_GAME
+        MENUITEM "&Exit",     IDM_FILE_EXIT
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About",   IDM_HELP_ABOUT
+        MENUITEM "&About",    IDM_HELP_ABOUT
     END
 END

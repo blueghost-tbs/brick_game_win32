@@ -160,7 +160,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         case WM_COMMAND:
             switch (LOWORD (wParam)) {
                 case IDM_FILE_EXIT:
-                    SendMessage(hwnd, WM_CLOSE, 0, 0) ;
+                    SendMessage(hwnd, WM_CLOSE, 0, 0);
+                    break;
+                case IDM_FILE_NEW_GAME:
+                    tetris_new_game();
                     break;
                 case IDM_HELP_ABOUT:
                     MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nWork-in-progress demo version 0.1"), TEXT("Brick Game"), MB_ICONINFORMATION);
@@ -196,12 +199,12 @@ static void draw_field(HDC hdc) {
     // Draw score
     SetBkMode(hdc, TRANSPARENT);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y, "SCORE", 5);
-    snprintf(score, 31, "%lu", ts->score);
+    _snprintf(score, 31, "%lu", ts->score);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + 20, score, strlen(score));
 
     // Draw level
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
-    snprintf(level, 31, "%d", ts->level);
+    _snprintf(level, 31, "%d", ts->level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + 20, level, strlen(level));
 
     // Draw playfield

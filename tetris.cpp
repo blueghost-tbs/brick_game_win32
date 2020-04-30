@@ -59,7 +59,7 @@ static struct {
  */
 
 #define LEVEL_SPEEDS_NUM 11
-const static int level_speed[LEVEL_SPEEDS_NUM] {
+const static int level_speed[LEVEL_SPEEDS_NUM] = {
     1000,
     900,
     800,
@@ -70,7 +70,7 @@ const static int level_speed[LEVEL_SPEEDS_NUM] {
     300,
     200,
     100,
-    50
+    90
 };
 
 /******************************************************************************
@@ -86,9 +86,10 @@ void tetris_init(void) {
     }
 
     tetris_state.score = 0;
-    tetris_state.score_changed = 0;
+    tetris_state.score_changed = 1;
     tetris_state.level = 1;
-    tetris_state.level_changed = 0;
+    tetris_state.level_changed = 1;
+    tetris_state.lines_since_level_increase = 0;
 
     tetris_reset_redraw_rectangle();
     srand(time(NULL));
@@ -231,6 +232,15 @@ void tetris_game_loop(void) {
             down_key_press_start_time = t;
         }
     }
+}
+
+void tetris_new_game(void) {
+    tetris_init();
+    tetris_state.rr.left = 0;
+    tetris_state.rr.top = 0;
+    tetris_state.rr.right = TETRIS_PLAYFIELD_WIDTH;
+    tetris_state.rr.bottom = TETRIS_PLAYFIELD_HEIGHT;
+    tetris_state.rr.clean = 0;
 }
 
 /******************************************************************************
