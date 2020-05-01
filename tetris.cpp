@@ -61,16 +61,16 @@ static struct {
 #define LEVEL_SPEEDS_NUM 11
 const static int level_speed[LEVEL_SPEEDS_NUM] = {
     1000,
-    900,
     800,
-    700,
-    600,
-    500,
-    400,
-    300,
+    640,
+    512,
+    410,
+    325,
+    250,
     200,
-    100,
-    90
+    166,
+    133,
+    110
 };
 
 /******************************************************************************
@@ -208,7 +208,10 @@ void tetris_game_loop(void) {
 
     if (t > gravity_timer + speed) {
         tetris_tick();
-        gravity_timer = t;
+    }
+
+    while (t > gravity_timer + speed) {
+        gravity_timer += speed;
     }
 
     if (left_key_is_pressed) {
