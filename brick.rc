@@ -1,5 +1,7 @@
 #include "resource.h"
 
+IDI_ICON ICON "tetris.ico"
+
 BRICKGAME MENU
 BEGIN
     POPUP "&File"
