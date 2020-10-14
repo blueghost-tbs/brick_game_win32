@@ -11,15 +11,19 @@
 #define GAMELOOP_TICK  50
 #define GAMELOOP_CLOCK 2
 
+// Declaration of static functions
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
+static void reinitialize_block_bitmaps(HDC hdc);
 
 static int minimum_window_width = CLIENTWIDTH;
 static int minimum_window_height = CLIENTHEIGHT;
 static int block_size = 20;
 static int block_border = 2;
 static HBRUSH background_brush;
+static HBITMAP block_bitmap_full = NULL;
+static HBITMAP block_bitmap_empty = NULL;
 
 #define SCORE_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
 #define SCORE_TEXT_Y  (block_size / 4)
@@ -131,6 +135,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             block_border = block_size / 10;
             if (block_border < 2)
                 block_border = 2;
+            reinitialize_block_bitmaps(hdc);
             ReleaseDC(hwnd, hdc);
             return 0;
         }
@@ -181,10 +186,7 @@ static void draw_field(HDC hdc) {
     RECT rect;
     tetris_state_t *ts = tetris_get_state();
     HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    HBRUSH emptybrush = CreateSolidBrush(RGB(160, 160, 160));
     HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
-    HPEN emptypen = CreatePen(PS_SOLID, block_border, RGB(160, 160, 160));
-    int block_border_fix = block_border - block_border % 2;
     char score[32] = {'\0',};
     char level[32] = {'\0',};
 
@@ -207,6 +209,11 @@ static void draw_field(HDC hdc) {
     _snprintf(level, 31, "%d", ts->level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + 20, level, strlen(level));
 
+    HDC hdcfull = CreateCompatibleDC(hdc);
+    SelectObject(hdcfull, block_bitmap_full);
+    HDC hdcempty = CreateCompatibleDC(hdc);
+    SelectObject(hdcempty, block_bitmap_empty);
+
     // Draw playfield
     for (i = 0; i < TETRIS_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < TETRIS_PLAYFIELD_HEIGHT; j++) {
@@ -216,35 +223,15 @@ static void draw_field(HDC hdc) {
             rect.bottom = rect.top + block_size;
 
             if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY) {
-                SelectObject(hdc, emptypen);
+                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
             } else
-                SelectObject(hdc, pen);
-
-            rect.left += block_border;
-            rect.top += block_border;
-            rect.right -= block_border;
-            rect.bottom -= block_border;
-
-            MoveToEx(hdc, rect.left, rect.top, NULL);
-            LineTo(hdc, rect.right, rect.top);
-            LineTo(hdc, rect.right, rect.bottom);
-            LineTo(hdc, rect.left, rect.bottom);
-            LineTo(hdc, rect.left, rect.top);
-
-            rect.left += block_border;
-            rect.top += block_border;
-            rect.right -= block_border_fix;
-            rect.bottom -= block_border_fix;
-            if (ts->playfield[i][j] == TETRIS_FIELD_EMPTY) 
-                FillRect(hdc, &rect, emptybrush);
-            else
-                FillRect(hdc, &rect, brush);
+                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
         }
     }
 
+    DeleteDC(hdcfull);
+    DeleteDC(hdcempty);
     DeleteObject(pen);
-    DeleteObject(emptypen);
-    DeleteObject(emptybrush);
 }
 
 static void invalidate_window_part(HWND hwnd) {
@@ -278,4 +265,104 @@ static void invalidate_window_part(HWND hwnd) {
         InvalidateRect(hwnd, &rc, TRUE);
         ts->level_changed = 0;
     }
+}
+
+static void reinitialize_block_bitmaps(HDC hdc) {
+    // Memory allocation for new bitmaps
+    unsigned char *bitmap_full = (unsigned char*)malloc(block_size * block_size * 4);
+    if (bitmap_full == NULL) {
+        // Not enough memory!
+        return;
+    }
+    memset(bitmap_full, 192, block_size * block_size * 4);
+    unsigned char *bitmap_empty = (unsigned char*)malloc(block_size * block_size * 4);
+    if (bitmap_empty == NULL) {
+        // Not enough memory!
+        free(bitmap_full);
+        return;
+    }
+    memset(bitmap_empty, 192, block_size * block_size * 4);
+
+    // Create and initialize BITMAPINFOHEADER for the 32-bit image
+    BITMAPINFOHEADER bmih;
+    memset(&bmih, 0, sizeof(BITMAPINFOHEADER));
+    bmih.biWidth = block_size;
+    bmih.biHeight = block_size;
+    bmih.biBitCount = 32;
+    bmih.biCompression = BI_RGB;
+    bmih.biSize = sizeof(BITMAPINFOHEADER);
+    bmih.biPlanes = 1;
+    bmih.biSizeImage = block_size * block_size * 4;
+
+    // Create and initialize BITMAPINFO for the 32-bit image
+    PBITMAPINFO pbmi = (PBITMAPINFO)calloc(1, sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD));
+    pbmi->bmiHeader.biWidth = block_size;
+    pbmi->bmiHeader.biHeight = block_size;
+    pbmi->bmiHeader.biBitCount = 32;
+    pbmi->bmiHeader.biCompression = BI_RGB;
+    pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    pbmi->bmiHeader.biPlanes = 1;
+    pbmi->bmiHeader.biSizeImage = block_size * block_size * 4;
+
+    // Fill bitmaps
+    int i, j;
+    // Borders
+    int outer_border = block_border * 7 / 10;
+    for (i = outer_border; i < block_size - outer_border; i++) {
+        for (j = outer_border; j < outer_border + block_border; j++) {
+            // Vertical border
+            bitmap_full[(i * block_size + j) * 4] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
+            bitmap_empty[(i * block_size + j) * 4] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+            // Horizontal border (i and j are swapped)
+            bitmap_full[(j * block_size + i) * 4] = 0;
+            bitmap_full[(j * block_size + i) * 4 + 1] = 0;
+            bitmap_full[(j * block_size + i) * 4 + 2] = 0;
+            bitmap_empty[(j * block_size + i) * 4] = 160;
+            bitmap_empty[(j * block_size + i) * 4 + 1] = 160;
+            bitmap_empty[(j * block_size + i) * 4 + 2] = 160;
+        }
+        for (j = block_size - block_border - outer_border; j < block_size - outer_border; j++) {
+            // Vertical border
+            bitmap_full[(i * block_size + j) * 4] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
+            bitmap_empty[(i * block_size + j) * 4] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+            // Horizontal border (i and j are swapped)
+            bitmap_full[(j * block_size + i) * 4] = 0;
+            bitmap_full[(j * block_size + i) * 4 + 1] = 0;
+            bitmap_full[(j * block_size + i) * 4 + 2] = 0;
+            bitmap_empty[(j * block_size + i) * 4] = 160;
+            bitmap_empty[(j * block_size + i) * 4 + 1] = 160;
+            bitmap_empty[(j * block_size + i) * 4 + 2] = 160;
+        }
+    }
+    // Inner rectangle
+    for (i = block_border * 2; i < block_size - block_border * 2; i++) {
+        for (j = block_border * 2; j < block_size - block_border * 2; j++) {
+            bitmap_full[(i * block_size + j) * 4] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
+            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
+            bitmap_empty[(i * block_size + j) * 4] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+        }
+    }
+
+    // Delete previous bitmaps
+    if (block_bitmap_full != NULL)
+        DeleteObject(block_bitmap_full);
+    if (block_bitmap_empty != NULL)
+        DeleteObject(block_bitmap_empty);
+
+    block_bitmap_full = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_empty, pbmi, DIB_RGB_COLORS);
+    
+    free(bitmap_full);
+    free(bitmap_empty);
 }
