@@ -31,6 +31,8 @@ static HFONT hf = NULL;
 #define SCORE_TEXT_Y  (block_size / 4)
 #define LEVEL_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
 #define LEVEL_TEXT_Y  (block_size / 4) + block_size * 2
+#define NEXT_TEXT_X   (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
+#define NEXT_TEXT_Y   (block_size / 4) + block_size * 6
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
     background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
@@ -215,10 +217,28 @@ static void draw_field(HDC hdc) {
     _snprintf(level, 31, "%d", ts->level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + block_size, level, strlen(level));
 
+    // Draw "next" label
+    TextOutA(hdc, NEXT_TEXT_X, NEXT_TEXT_Y, "NEXT", 4);
+
     HDC hdcfull = CreateCompatibleDC(hdc);
     SelectObject(hdcfull, block_bitmap_full);
     HDC hdcempty = CreateCompatibleDC(hdc);
     SelectObject(hdcempty, block_bitmap_empty);
+
+    // Draw next figure
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            rect.left = NEXT_TEXT_X + i * block_size;
+            rect.top = (j + 7) * block_size + block_size / 2;
+            rect.right =  rect.left + block_size;
+            rect.bottom = rect.top + block_size;
+
+            if (ts->next[i][j] == TETRIS_FIELD_EMPTY) {
+                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
+            } else
+                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
+        }
+    }
 
     // Draw playfield
     for (i = 0; i < TETRIS_PLAYFIELD_WIDTH; i++) {
@@ -252,6 +272,15 @@ static void invalidate_window_part(HWND hwnd) {
         rc.bottom = offset + (ts->rr.bottom + 1) * block_size;
         InvalidateRect(hwnd, &rc, FALSE);
         tetris_reset_redraw_rectangle();
+    }
+
+    if (ts->next_changed) {
+        rc.left = NEXT_TEXT_X;
+        rc.top = 7 * block_size + block_size / 2;
+        rc.right =  rc.left + block_size * 4;
+        rc.bottom = rc.top + block_size * 4;
+        InvalidateRect(hwnd, &rc, TRUE);
+        tetris_next_figure_accepted();
     }
 
     if (ts->score_changed) {

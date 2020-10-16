@@ -18,6 +18,7 @@ static int search_full_line(void);
 static void clean_line(int line);
 static void move_down_lines(int line);
 static void tetris_tick(void);
+static void notify_next_figure();
 
 static tetris_state_t tetris_state;
 static int current_brick_pos_x = 5;
@@ -85,6 +86,12 @@ void tetris_init(void) {
         }
     }
 
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            tetris_state.next[i][j] = TETRIS_FIELD_EMPTY;
+        }
+    }
+
     tetris_state.score = 0;
     tetris_state.score_changed = 1;
     tetris_state.level = 1;
@@ -92,6 +99,7 @@ void tetris_init(void) {
     tetris_state.lines_since_level_increase = 0;
 
     tetris_reset_redraw_rectangle();
+    tetris_state.next_changed = true;
     srand(time(NULL));
 
     current_brick_pos_y = tetris_get_next_figure() - 1;
@@ -151,6 +159,11 @@ void tetris_reset_redraw_rectangle(void) {
     tetris_state.rr.right = 0;
     tetris_state.rr.bottom = 0;
     tetris_state.rr.clean = 1;
+}
+
+
+void tetris_next_figure_accepted(void) {
+    tetris_state.next_changed = false;
 }
 
 void tetris_game_loop(void) {
@@ -332,6 +345,7 @@ static int tetris_get_next_figure(void) {
     bag_remaining--;
 
     next_state = rand() % tetrominos[next_figure]->states_num;
+    notify_next_figure();
 
     for (i = tetrominos[current_figure]->size; i > 0; i--) {
         for (j = 0; j < tetrominos[current_figure]->size; j++) {
@@ -574,4 +588,22 @@ static void move_down_lines(int line) {
         tetris_state.rr.bottom = line;
         tetris_state.rr.clean = 0;
     }
+}
+
+static void notify_next_figure(void) {
+    int i, j;
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            tetris_state.next[i][j] = 0;
+        }
+    }
+
+    for (i = 0; i < tetrominos[next_figure]->size; i++) {
+        for (j = 0; j < tetrominos[next_figure]->size; j++) {
+            tetris_state.next[i][j] = tetrominos[next_figure]->states[next_state][i][j];
+        }
+    }
+
+    tetris_state.next_changed = true;
 }
