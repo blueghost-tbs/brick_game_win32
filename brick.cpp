@@ -16,6 +16,7 @@ static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
 static void reinitialize_block_bitmaps(HDC hdc);
+static void set_font_size(HDC hdc, unsigned short size);
 
 static int minimum_window_width = CLIENTWIDTH;
 static int minimum_window_height = CLIENTHEIGHT;
@@ -24,11 +25,12 @@ static int block_border = 2;
 static HBRUSH background_brush;
 static HBITMAP block_bitmap_full = NULL;
 static HBITMAP block_bitmap_empty = NULL;
+static HFONT hf = NULL;
 
 #define SCORE_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
 #define SCORE_TEXT_Y  (block_size / 4)
 #define LEVEL_TEXT_X  (block_size * (TETRIS_PLAYFIELD_WIDTH + 1) + 5)
-#define LEVEL_TEXT_Y  (block_size / 4) + 40
+#define LEVEL_TEXT_Y  (block_size / 4) + block_size * 2
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
     background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
@@ -136,6 +138,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             if (block_border < 2)
                 block_border = 2;
             reinitialize_block_bitmaps(hdc);
+            set_font_size(hdc, block_size / 2);
             ReleaseDC(hwnd, hdc);
             return 0;
         }
@@ -198,16 +201,19 @@ static void draw_field(HDC hdc) {
     LineTo(hdc, block_size / 4, block_size * (TETRIS_PLAYFIELD_HEIGHT + 1) - block_size / 4);
     LineTo(hdc, block_size / 4, block_size / 4);
 
-    // Draw score
+    // Set font & color
     SetBkMode(hdc, TRANSPARENT);
+    SelectObject(hdc, hf);
+
+    // Draw score
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y, "SCORE", 5);
     _snprintf(score, 31, "%lu", ts->score);
-    TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + 20, score, strlen(score));
+    TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + block_size, score, strlen(score));
 
     // Draw level
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
     _snprintf(level, 31, "%d", ts->level);
-    TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + 20, level, strlen(level));
+    TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + block_size, level, strlen(level));
 
     HDC hdcfull = CreateCompatibleDC(hdc);
     SelectObject(hdcfull, block_bitmap_full);
@@ -249,19 +255,19 @@ static void invalidate_window_part(HWND hwnd) {
     }
 
     if (ts->score_changed) {
-        rc.left = SCORE_TEXT_X;
-        rc.right = SCORE_TEXT_X + 100;
-        rc.top = SCORE_TEXT_Y + 20;
-        rc.bottom = SCORE_TEXT_Y + 40;
+        SetRect(&rc, SCORE_TEXT_X,
+                     SCORE_TEXT_Y + block_size,
+                     SCORE_TEXT_X + block_size * 4,
+                     SCORE_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, TRUE);
         ts->score_changed = 0;
     }
 
     if (ts->level_changed) {
-        rc.left = LEVEL_TEXT_X;
-        rc.right = LEVEL_TEXT_X + 100;
-        rc.top = LEVEL_TEXT_Y + 20;
-        rc.bottom = LEVEL_TEXT_Y + 40;
+        SetRect(&rc, LEVEL_TEXT_X,
+                     LEVEL_TEXT_Y + block_size,
+                     LEVEL_TEXT_X + block_size * 4,
+                     LEVEL_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, TRUE);
         ts->level_changed = 0;
     }
@@ -365,4 +371,12 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     
     free(bitmap_full);
     free(bitmap_empty);
+}
+
+static void set_font_size(HDC hdc, unsigned short size) {
+    long lfHeight = -MulDiv(size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+
+    if (hf != NULL)
+        DeleteObject(hf);
+    hf = CreateFont(lfHeight, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
 }
