@@ -397,7 +397,8 @@ static void reinitialize_block_bitmaps(HDC hdc) {
 
     block_bitmap_full = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
     block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_empty, pbmi, DIB_RGB_COLORS);
-    
+
+    free(pbmi);
     free(bitmap_full);
     free(bitmap_empty);
 }
