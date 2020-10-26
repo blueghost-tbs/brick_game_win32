@@ -185,7 +185,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     tetris_new_game();
                     break;
                 case IDM_HELP_ABOUT:
-                    MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nWork-in-progress demo version 0.1"), TEXT("Brick Game"), MB_ICONINFORMATION);
+                    MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nWork-in-progress demo version 0.2"), TEXT("Brick Game"), MB_ICONINFORMATION);
                     break;
             }
             return 0;
