@@ -19,6 +19,7 @@ typedef struct {
     redraw_rectangle_t rr;
     char next[4][4];
     bool next_changed;
+    bool game_over_notification_flag;
     unsigned long score;
     char score_changed;
     int level;

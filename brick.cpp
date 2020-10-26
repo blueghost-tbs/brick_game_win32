@@ -103,6 +103,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                 case GAMELOOP_CLOCK:
                     tetris_game_loop();
                     invalidate_window_part(hwnd);
+                    /* Check for game over */
+                    tetris_state_t *ts = tetris_get_state();
+                    if (ts->game_over_notification_flag) {
+                        ts->game_over_notification_flag = false;
+                        char message[100] = {'\0',};
+                        _snprintf(message, 100, "Game over! Your final score is %lu.\nWould you like to start a new game?", ts->score);
+                        if (MessageBox(hwnd, TEXT(message), TEXT("Game over"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
+                            tetris_new_game();
+                    }
                     break;
             }
             return 0;

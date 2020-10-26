@@ -46,6 +46,7 @@ static char ignore_down_key = 0;
 #define TS_LINEDELETED_ANIMATION 1
 #define TS_BLOCKSMOVED_ANIMATION 2
 #define TS_NEXTFGAFTER_ANIMATION 3
+#define TS_GAMEOVER              4
 static struct {
     char state;
     char line;
@@ -97,12 +98,19 @@ void tetris_init(void) {
     tetris_state.level = 1;
     tetris_state.level_changed = 1;
     tetris_state.lines_since_level_increase = 0;
+    tetris_state.game_over_notification_flag = false;
 
     tetris_reset_redraw_rectangle();
     tetris_state.next_changed = true;
     srand(time(NULL));
 
+    left_key_is_pressed = 0;
+    right_key_is_pressed = 0;
+    up_key_is_pressed = 0;
+    down_key_is_pressed = 0;
+
     current_brick_pos_y = tetris_get_next_figure() - 1;
+    ts.state = TS_NORMAL;
 }
 
 tetris_state_t *tetris_get_state(void) {
@@ -110,28 +118,38 @@ tetris_state_t *tetris_get_state(void) {
 }
 
 void tetris_right_key_press(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     if (right_key_is_pressed == 0)
         right_key_press_start_time = GetTickCount();
     right_key_is_pressed = 1;
 }
 
 void tetris_left_key_press(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     if (left_key_is_pressed == 0)
         left_key_press_start_time = GetTickCount();
     left_key_is_pressed = 1;
 }
 
 void tetris_right_key_release(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     right_key_is_pressed = 0;
     right_key_repeat = 0;
 }
 
 void tetris_left_key_release(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     left_key_is_pressed = 0;
     left_key_repeat = 0;
 }
 
 void tetris_up_key_press(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     if (up_key_is_pressed == 0) {
         tetris_up_key();
     }
@@ -139,16 +157,22 @@ void tetris_up_key_press(void) {
 }
 
 void tetris_up_key_release(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     up_key_is_pressed = 0;
 }
 
 void tetris_down_key_press(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     if (down_key_is_pressed == 0)
         down_key_press_start_time = GetTickCount();
     down_key_is_pressed = 1;
 }
 
 void tetris_down_key_release(void) {
+    if (ts.state == TS_GAMEOVER)
+        return;
     down_key_is_pressed = 0;
     ignore_down_key = 0;
 }
@@ -167,7 +191,9 @@ void tetris_next_figure_accepted(void) {
 }
 
 void tetris_game_loop(void) {
-    if (ts.state == TS_LINEDELETED_ANIMATION) {
+    if (ts.state == TS_GAMEOVER) {
+        return;
+    } else if (ts.state == TS_LINEDELETED_ANIMATION) {
         move_down_lines(ts.line);
         ts.state = TS_BLOCKSMOVED_ANIMATION;
         return;
@@ -286,6 +312,13 @@ static void tetris_tick(void) {
         if (it_was_clean)
             tetris_reset_redraw_rectangle();
         draw_figure(0);
+
+        if (current_brick_pos_y < 0) {
+            draw_figure(1);
+            ts.state = TS_GAMEOVER;
+            tetris_state.game_over_notification_flag = true;
+            return;
+        }
 
         line = search_full_line();
         if (line > 0) {
