@@ -94,6 +94,10 @@ SOURCE=.\brick.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\snake.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\tetris.cpp
 # End Source File
 # End Group
@@ -102,7 +106,15 @@ SOURCE=.\tetris.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\brick.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\snake.h
 # End Source File
 # Begin Source File
 
