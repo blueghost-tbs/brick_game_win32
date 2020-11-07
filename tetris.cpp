@@ -1,4 +1,4 @@
-#include "tetris.h"
+#include "brick.h"
 #include "tetrominos.h"
 
 #include <time.h>

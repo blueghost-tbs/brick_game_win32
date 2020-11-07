@@ -1,6 +1,5 @@
 #include "brick.h"
-#include "tetris.h"
-#include "snake.h"
+#include "game_interfaces.h"
 #include "resource.h"
 
 #include <windows.h>

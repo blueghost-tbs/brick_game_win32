@@ -114,11 +114,7 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\snake.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tetris.h
+SOURCE=.\game_interfaces.h
 # End Source File
 # Begin Source File
 

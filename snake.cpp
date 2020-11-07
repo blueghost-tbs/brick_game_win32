@@ -1,5 +1,4 @@
 #include "brick.h"
-#include "snake.h"
 
 /* Interface static function prototypes */
 static void snake_init(void);
