@@ -11,7 +11,7 @@ BEGIN
     END
     POPUP "&Game"
     BEGIN
-        MENUITEM "&Tetris",   IDM_GAME_TETRIS, CHECKED
+        MENUITEM "&Tetris",   IDM_GAME_TETRIS
         MENUITEM "&Snake",    IDM_GAME_SNAKE
     END
     POPUP "&Help"

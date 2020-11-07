@@ -38,10 +38,12 @@ static HFONT hf = NULL;
 #define NEXT_TEXT_Y   (block_size / 4) + block_size * 6
 
 /* Games */
+#define GAME_FIRST  0
 #define GAME_TETRIS 0
 #define GAME_SNAKE  1
-game_interface_t games[2];
-static short active_game = GAME_TETRIS;
+#define GAME_LAST   1
+game_interface_t games[GAME_LAST + 1];
+static short active_game = GAME_LAST;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
     background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
@@ -115,7 +117,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     switch (message) {
         case WM_CREATE:
             initialize_game_interfaces();
-            games[active_game].game_init();
+            change_game(GAME_FIRST, hwnd);
             SetTimer(hwnd, GAMELOOP_CLOCK, GAMELOOP_TICK, NULL);
             return 0;
 
@@ -457,9 +459,8 @@ static void change_game(int game, HWND hwnd) {
     HMENU menu_game = GetSubMenu(menu, 1);
 
     if (active_game != game) {
-        CheckMenuItem(menu, GetMenuItemID(menu_game, active_game), MF_UNCHECKED);
         active_game = game;
         games[active_game].game_init();
-        CheckMenuItem(menu, GetMenuItemID(menu_game, active_game), MF_CHECKED);
+        CheckMenuRadioItem(menu_game, GAME_FIRST, GAME_LAST, active_game, MF_BYPOSITION);
     }
 }
