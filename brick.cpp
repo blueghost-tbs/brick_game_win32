@@ -20,6 +20,7 @@ static void invalidate_window_part(HWND hwnd);
 static void reinitialize_block_bitmaps(HDC hdc);
 static void set_font_size(HDC hdc, unsigned short size);
 static void initialize_game_interfaces(void);
+static void change_game(int game, HWND hwnd);
 
 static int minimum_window_width = CLIENTWIDTH;
 static int minimum_window_height = CLIENTHEIGHT;
@@ -97,6 +98,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     return msg.wParam;
 }
 
+void reset_redraw_rectangle(redraw_rectangle_t *rr) {
+    rr->left = BRICK_PLAYFIELD_WIDTH;
+    rr->top = BRICK_PLAYFIELD_HEIGHT;
+    rr->right = 0;
+    rr->bottom = 0;
+    rr->clean = 1;
+}
+
+/******************************************************************************
+ * Static functions.
+ ******************************************************************************/
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     PAINTSTRUCT ps;
     HDC hdc;
@@ -120,7 +132,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                         char message[100] = {'\0',};
                         _snprintf(message, 100, "Game over! Your final score is %lu.\nWould you like to start a new game?", ts->score);
                         if (MessageBox(hwnd, TEXT(message), TEXT("Game over"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
-                            games[active_game].game_new_game();
+                            games[active_game].game_init();
                     }
                     break;
             }
@@ -192,10 +204,16 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     SendMessage(hwnd, WM_CLOSE, 0, 0);
                     break;
                 case IDM_FILE_NEW_GAME:
-                    games[active_game].game_new_game();
+                    games[active_game].game_init();
                     break;
                 case IDM_HELP_ABOUT:
                     MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nWork-in-progress demo version 0.2"), TEXT("Brick Game"), MB_ICONINFORMATION);
+                    break;
+                case IDM_GAME_TETRIS:
+                    change_game(GAME_TETRIS, hwnd);
+                    break;
+                case IDM_GAME_SNAKE:
+                    change_game(GAME_SNAKE, hwnd);
                     break;
             }
             return 0;
@@ -290,7 +308,7 @@ static void invalidate_window_part(HWND hwnd) {
         rc.top = offset + ts->rr.top * block_size;
         rc.bottom = offset + (ts->rr.bottom + 1) * block_size;
         InvalidateRect(hwnd, &rc, FALSE);
-        games[active_game].game_reset_redraw_rectangle();
+        reset_redraw_rectangle(&ts->rr);
     }
 
     if (ts->next_changed) {
@@ -433,4 +451,16 @@ static void set_font_size(HDC hdc, unsigned short size) {
 static void initialize_game_interfaces(void) {
     tetris_init_interface(&games[GAME_TETRIS]);
     snake_init_interface(&games[GAME_SNAKE]);
+}
+
+static void change_game(int game, HWND hwnd) {
+    HMENU menu = GetMenu(hwnd);
+    HMENU menu_game = GetSubMenu(menu, 1);
+
+    if (active_game != game) {
+        CheckMenuItem(menu, GetMenuItemID(menu_game, active_game), MF_UNCHECKED);
+        active_game = game;
+        games[active_game].game_init();
+        CheckMenuItem(menu, GetMenuItemID(menu_game, active_game), MF_CHECKED);
+    }
 }

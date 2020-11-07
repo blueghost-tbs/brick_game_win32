@@ -6,5 +6,7 @@
 #define IDM_FILE_NEW_GAME 40001
 #define IDM_FILE_EXIT     40002
 #define IDM_HELP_ABOUT    40003
+#define IDM_GAME_TETRIS   40004
+#define IDM_GAME_SNAKE    40005
 
 #endif /* _RESOURCE_H_ */

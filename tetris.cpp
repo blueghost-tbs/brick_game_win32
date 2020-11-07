@@ -16,12 +16,10 @@ static void tetris_up_key_press(void);
 static void tetris_up_key_release(void);
 static void tetris_down_key_press(void);
 static void tetris_down_key_release(void);
-static void tetris_reset_redraw_rectangle(void);
 static void tetris_next_figure_accepted(void);
 static void tetris_game_loop(void);
 
 /* Other static function prototypes */
-static void tetris_new_game(void);
 static int  tetris_get_next_figure(void);
 static void draw_figure(char need_redraw);
 static void clear_figure(void);
@@ -106,10 +104,8 @@ void tetris_init_interface(game_interface_t *iface) {
     iface->game_up_key_release = tetris_up_key_release;
     iface->game_down_key_press = tetris_down_key_press;
     iface->game_down_key_release = tetris_down_key_release;
-    iface->game_reset_redraw_rectangle = tetris_reset_redraw_rectangle;
     iface->game_next_figure_accepted = tetris_next_figure_accepted;
     iface->game_loop = tetris_game_loop;
-    iface->game_new_game = tetris_new_game;
 }
 
 /******************************************************************************
@@ -137,7 +133,12 @@ static void tetris_init(void) {
     tetris_state.lines_since_level_increase = 0;
     tetris_state.game_over_notification_flag = false;
 
-    tetris_reset_redraw_rectangle();
+    tetris_state.rr.left = 0;
+    tetris_state.rr.top = 0;
+    tetris_state.rr.right = BRICK_PLAYFIELD_WIDTH;
+    tetris_state.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
+    tetris_state.rr.clean = 0;
+
     tetris_state.next_changed = true;
     srand(time(NULL));
 
@@ -213,15 +214,6 @@ static void tetris_down_key_release(void) {
     down_key_is_pressed = 0;
     ignore_down_key = 0;
 }
-
-static void tetris_reset_redraw_rectangle(void) {
-    tetris_state.rr.left = BRICK_PLAYFIELD_WIDTH;
-    tetris_state.rr.top = BRICK_PLAYFIELD_HEIGHT;
-    tetris_state.rr.right = 0;
-    tetris_state.rr.bottom = 0;
-    tetris_state.rr.clean = 1;
-}
-
 
 static void tetris_next_figure_accepted(void) {
     tetris_state.next_changed = false;
@@ -313,15 +305,6 @@ static void tetris_game_loop(void) {
     }
 }
 
-static void tetris_new_game(void) {
-    tetris_init();
-    tetris_state.rr.left = 0;
-    tetris_state.rr.top = 0;
-    tetris_state.rr.right = BRICK_PLAYFIELD_WIDTH;
-    tetris_state.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
-    tetris_state.rr.clean = 0;
-}
-
 static void tetris_tick(void) {
     if (ts.state == TS_NEXTFGAFTER_ANIMATION) {
         current_brick_pos_y = tetris_get_next_figure();
@@ -344,7 +327,7 @@ static void tetris_tick(void) {
     if (is_collide()) {
         current_brick_pos_y--;
         if (it_was_clean)
-            tetris_reset_redraw_rectangle();
+            reset_redraw_rectangle(&tetris_state.rr);
         draw_figure(0);
 
         if (current_brick_pos_y < 0) {
@@ -532,7 +515,7 @@ static void tetris_move_right(void) {
     if (is_collide()) {
         current_brick_pos_x--;
         if (it_was_clean)
-            tetris_reset_redraw_rectangle();
+            reset_redraw_rectangle(&tetris_state.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
@@ -547,7 +530,7 @@ static void tetris_move_left(void) {
     if (is_collide()) {
         current_brick_pos_x++;
         if (it_was_clean)
-            tetris_reset_redraw_rectangle();
+            reset_redraw_rectangle(&tetris_state.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
@@ -565,7 +548,7 @@ static void tetris_up_key(void) {
     if (is_collide()) {
         rotate_left();
         if (it_was_clean)
-            tetris_reset_redraw_rectangle();
+            reset_redraw_rectangle(&tetris_state.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
