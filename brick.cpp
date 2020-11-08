@@ -246,11 +246,23 @@ static void draw_field(HDC hdc) {
     SelectObject(hdc, hf);
 
     // Draw score
+    SetRect(&rect, SCORE_TEXT_X,
+                   SCORE_TEXT_Y + block_size,
+                   SCORE_TEXT_X + block_size * 4,
+                   SCORE_TEXT_Y + 2 * block_size);
+    // Delete the previous score because we don't erase the background with InvalidateRect to avoid flashing
+    FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y, "SCORE", 5);
     _snprintf(score, 31, "%lu", ts->score);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + block_size, score, strlen(score));
 
     // Draw level
+    SetRect(&rect, LEVEL_TEXT_X,
+                   LEVEL_TEXT_Y + block_size,
+                   LEVEL_TEXT_X + block_size * 4,
+                   LEVEL_TEXT_Y + 2 * block_size);
+    // Delete the previous score because we don't erase the background with InvalidateRect to avoid flashing
+    FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
     _snprintf(level, 31, "%d", ts->level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + block_size, level, strlen(level));
@@ -317,7 +329,7 @@ static void invalidate_window_part(HWND hwnd) {
         rc.top = 7 * block_size + block_size / 2;
         rc.right =  rc.left + block_size * 4;
         rc.bottom = rc.top + block_size * 4;
-        InvalidateRect(hwnd, &rc, TRUE);
+        InvalidateRect(hwnd, &rc, FALSE);
         games[active_game].game_next_figure_accepted();
     }
 
@@ -326,7 +338,7 @@ static void invalidate_window_part(HWND hwnd) {
                      SCORE_TEXT_Y + block_size,
                      SCORE_TEXT_X + block_size * 4,
                      SCORE_TEXT_Y + 2 * block_size);
-        InvalidateRect(hwnd, &rc, TRUE);
+        InvalidateRect(hwnd, &rc, FALSE);
         ts->score_changed = 0;
     }
 
@@ -335,7 +347,7 @@ static void invalidate_window_part(HWND hwnd) {
                      LEVEL_TEXT_Y + block_size,
                      LEVEL_TEXT_X + block_size * 4,
                      LEVEL_TEXT_Y + 2 * block_size);
-        InvalidateRect(hwnd, &rc, TRUE);
+        InvalidateRect(hwnd, &rc, FALSE);
         ts->level_changed = 0;
     }
 }
