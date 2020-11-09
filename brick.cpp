@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define CLIENTWIDTH    330 // 220 playfield + 110 scoreboard
+#define CLIENTWIDTH    300 // 220 playfield + 80 scoreboard
 #define CLIENTHEIGHT   420
 #define WINDOWSTYLE    WS_OVERLAPPEDWINDOW
 
@@ -162,7 +162,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             hdc = GetDC(hwnd);
             RECT cr;
             GetClientRect(WindowFromDC(hdc), &cr);
-            int block_width = (cr.right - cr.left) * 2 / 33;
+            int block_width = (cr.right - cr.left) * 2 / 30;
             int block_height = (cr.bottom - cr.top) / 21;
             if (block_width < block_height)
                 block_size = block_width;
@@ -229,7 +229,8 @@ static void draw_field(HDC hdc) {
     RECT rect;
     brick_state_t *ts = games[active_game].game_get_state();
     HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    HPEN pen = CreatePen(PS_SOLID, block_border, RGB(0, 0, 0));
+    LOGBRUSH lbrush = {BS_SOLID, RGB(0, 0, 0), 0};
+    HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_SQUARE | PS_JOIN_BEVEL, block_border, &lbrush, 0, NULL);
     char score[32] = {'\0',};
     char level[32] = {'\0',};
 
@@ -261,7 +262,7 @@ static void draw_field(HDC hdc) {
                    LEVEL_TEXT_Y + block_size,
                    LEVEL_TEXT_X + block_size * 4,
                    LEVEL_TEXT_Y + 2 * block_size);
-    // Delete the previous score because we don't erase the background with InvalidateRect to avoid flashing
+    // Delete the previous level because we don't erase the background with InvalidateRect to avoid flashing
     FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
     _snprintf(level, 31, "%d", ts->level);
