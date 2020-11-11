@@ -44,11 +44,12 @@ typedef struct {
     short head;
     short tail;
     char move;
+    char delayed_move;
     char turn_in_progress;
     char state;
 } snake_t;
 
-static snake_t snake = {{{5, 5}, {5, 6}, {5, 7}}, 3, 1, 0, SNAKE_MOVE_DOWN, SNAKE_STATE_NORMAL};
+static snake_t snake = {{{5, 5}, {5, 6}, {5, 7}}, 3, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL};
 static unsigned int snake_timer = 0;
 
 /******************************************************************************
@@ -113,6 +114,7 @@ static void snake_init(void) {
     snake.segments[1].x = 5; snake.segments[1].y = 6;
     snake.segments[2].x = 5; snake.segments[2].y = 7;
     snake.move = SNAKE_MOVE_DOWN;
+    snake.delayed_move = -1;
     snake.state = SNAKE_STATE_NORMAL;
 
     for (i = 0; i < snake.length; i++) {
@@ -121,16 +123,24 @@ static void snake_init(void) {
 }
 
 static void snake_right_key_press(void) {
-    if (snake.move != SNAKE_MOVE_LEFT && !snake.turn_in_progress) {
-        snake.move = SNAKE_MOVE_RIGHT;
-        snake.turn_in_progress = true;
+    if (snake.move != SNAKE_MOVE_LEFT) {
+        if (!snake.turn_in_progress) {
+            snake.move = SNAKE_MOVE_RIGHT;
+            snake.turn_in_progress = true;
+        } else if (snake.delayed_move < 0) {
+            snake.delayed_move = SNAKE_MOVE_RIGHT;
+        }
     }
 }
 
 static void snake_left_key_press(void) {
-    if (snake.move != SNAKE_MOVE_RIGHT && !snake.turn_in_progress) {
-        snake.move = SNAKE_MOVE_LEFT;
-        snake.turn_in_progress = true;
+    if (snake.move != SNAKE_MOVE_RIGHT) {
+        if (!snake.turn_in_progress) {
+            snake.move = SNAKE_MOVE_LEFT;
+            snake.turn_in_progress = true;
+        } else if (snake.delayed_move < 0) {
+            snake.delayed_move = SNAKE_MOVE_LEFT;
+        }
     }
 }
 
@@ -141,19 +151,27 @@ static void snake_left_key_release(void) {
 }
 
 static void snake_up_key_press(void) {
-}
-
-static void snake_up_key_release(void) {
-    if (snake.move != SNAKE_MOVE_DOWN && !snake.turn_in_progress) {
-        snake.move = SNAKE_MOVE_UP;
-        snake.turn_in_progress = true;
+    if (snake.move != SNAKE_MOVE_DOWN) {
+        if (!snake.turn_in_progress) { 
+            snake.move = SNAKE_MOVE_UP;
+            snake.turn_in_progress = true;
+        } else if (snake.delayed_move < 0) {
+            snake.delayed_move = SNAKE_MOVE_UP;
+        }
     }
 }
 
+static void snake_up_key_release(void) {
+}
+
 static void snake_down_key_press(void) {
-    if (snake.move != SNAKE_MOVE_UP && !snake.turn_in_progress) {
-        snake.move = SNAKE_MOVE_DOWN;
-        snake.turn_in_progress = true;
+    if (snake.move != SNAKE_MOVE_UP) {
+        if (!snake.turn_in_progress) {
+            snake.move = SNAKE_MOVE_DOWN;
+            snake.turn_in_progress = true;
+        } else if (snake.delayed_move < 0) {
+            snake.delayed_move = SNAKE_MOVE_DOWN;
+        }
     }
 }
 
@@ -220,7 +238,12 @@ static void snake_tick(void) {
 
     snake.head = next_head;
     snake.tail = next_tail;
-    snake.turn_in_progress = false;
+    if (snake.delayed_move >= 0) {
+        snake.move = snake.delayed_move;
+        snake.delayed_move = -1;
+    } else {
+        snake.turn_in_progress = false;
+    }
     return;
 
 game_over:
