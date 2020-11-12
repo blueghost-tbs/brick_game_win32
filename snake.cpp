@@ -1,4 +1,5 @@
 #include "brick.h"
+#include "cleananimation.h"
 
 #include <windows.h>
 #include <time.h>
@@ -18,22 +19,24 @@ static void snake_next_figure_accepted(void);
 static void snake_game_loop(void);
 
 /* Other static function prototypes */
+static void snake_init_after_cleananimation();
 static void snake_tick(void);
 static void add_block_to_redraw_rectangle(char x, char y);
 static void place_food(void);
 
 static brick_state_t snake_state;
 
-#define SNAKE_MOVE_DOWN      0
-#define SNAKE_MOVE_UP        1
-#define SNAKE_MOVE_RIGHT     2
-#define SNAKE_MOVE_LEFT      3
+#define SNAKE_MOVE_DOWN            0
+#define SNAKE_MOVE_UP              1
+#define SNAKE_MOVE_RIGHT           2
+#define SNAKE_MOVE_LEFT            3
 
-#define SNAKE_MAX_SEGMENTS  30  
-#define SNAKE_SPEED        150
+#define SNAKE_MAX_SEGMENTS        30  
+#define SNAKE_SPEED              150
 
-#define SNAKE_STATE_NORMAL   0
-#define SNAKE_STATE_GAMEOVER 1
+#define SNAKE_STATE_NORMAL         0
+#define SNAKE_STATE_GAMEOVER       1
+#define SNAKE_STATE_CLEANANIMATION 2
 
 typedef struct {
     char x;
@@ -49,11 +52,13 @@ typedef struct {
     char turn_in_progress;
     char state;
     char increase_length;
+    char wait_before_hit;
 } snake_t;
 
-static snake_t snake = {{{5, 5}, {5, 6}, {5, 7}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0};
+static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0, 2};
 static segment_t food = {0, 0};
 static unsigned int snake_timer = 0;
+static unsigned char cleananimation_line = 0;
 
 /******************************************************************************
  * Exported functions.
@@ -81,6 +86,11 @@ static brick_state_t *snake_get_state(void) {
 }
 
 static void snake_init(void) {
+    snake.state = SNAKE_STATE_CLEANANIMATION;
+    cleananimation_init();
+}
+
+static void snake_init_after_cleananimation() {
     int i, j;
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
@@ -112,13 +122,14 @@ static void snake_init(void) {
 
     snake.head = 2;
     snake.tail = 0;
-    snake.segments[0].x = 5; snake.segments[0].y = 5;
-    snake.segments[1].x = 5; snake.segments[1].y = 6;
-    snake.segments[2].x = 5; snake.segments[2].y = 7;
+    snake.segments[0].x = 5; snake.segments[0].y = 0;
+    snake.segments[1].x = 5; snake.segments[1].y = 1;
+    snake.segments[2].x = 5; snake.segments[2].y = 2;
     snake.move = SNAKE_MOVE_DOWN;
     snake.delayed_move = -1;
     snake.state = SNAKE_STATE_NORMAL;
     snake.increase_length = 0;
+    snake.wait_before_hit = 2;
 
     for (i = snake.tail; i <= snake.head; i++) {
         snake_state.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED;
@@ -189,6 +200,13 @@ static void snake_next_figure_accepted(void) {
 }
 
 static void snake_game_loop(void) {
+    if (snake.state == SNAKE_STATE_CLEANANIMATION) {
+        cleananimation(&snake_state);
+        if (cleananimation(&snake_state) == CLEANANIMATION_DONE)
+            snake_init_after_cleananimation();
+        return;
+    }
+
     if (snake.state == SNAKE_STATE_GAMEOVER)
         return;
 
@@ -274,9 +292,14 @@ static void snake_tick(void) {
         place_food();
     }
 
+    snake.wait_before_hit = 2;
     return;
 
 game_over:
+    if (snake.wait_before_hit > 0) {
+        snake.wait_before_hit--;
+        return;
+    }
     snake_state.game_over_notification_flag = true;
     snake.state = SNAKE_STATE_GAMEOVER;
     return;

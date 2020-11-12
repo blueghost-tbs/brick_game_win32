@@ -94,6 +94,10 @@ SOURCE=.\brick.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\cleananimation.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\snake.cpp
 # End Source File
 # Begin Source File
@@ -110,11 +114,15 @@ SOURCE=.\brick.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\cleananimation.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\game_interfaces.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
