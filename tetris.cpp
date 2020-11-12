@@ -1,5 +1,6 @@
 #include "brick.h"
 #include "tetrominos.h"
+#include "cleananimation.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@ static void tetris_next_figure_accepted(void);
 static void tetris_game_loop(void);
 
 /* Other static function prototypes */
+static void tetris_init_after_cleananimation(void);
 static int  tetris_get_next_figure(void);
 static void draw_figure(char need_redraw);
 static void clear_figure(void);
@@ -62,6 +64,8 @@ static char ignore_down_key = 0;
 #define TS_BLOCKSMOVED_ANIMATION 2
 #define TS_NEXTFGAFTER_ANIMATION 3
 #define TS_GAMEOVER              4
+#define TS_CLEANANIMATION        5
+
 static struct {
     char state;
     char line;
@@ -112,6 +116,11 @@ void tetris_init_interface(game_interface_t *iface) {
  * Static functions.
  ******************************************************************************/
 static void tetris_init(void) {
+    ts.state = TS_CLEANANIMATION;
+    cleananimation_init();
+}
+
+static void tetris_init_after_cleananimation(void) {
     int i, j;
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
@@ -220,6 +229,13 @@ static void tetris_next_figure_accepted(void) {
 }
 
 static void tetris_game_loop(void) {
+    if (ts.state == TS_CLEANANIMATION) {
+        cleananimation(&tetris_state);
+        if (cleananimation(&tetris_state) == CLEANANIMATION_DONE)
+            tetris_init_after_cleananimation();
+        return;
+    }
+
     if (ts.state == TS_GAMEOVER) {
         return;
     } else if (ts.state == TS_LINEDELETED_ANIMATION) {
