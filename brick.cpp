@@ -400,32 +400,32 @@ static void reinitialize_block_bitmaps(HDC hdc) {
             bitmap_full[(i * block_size + j) * 4] = 0;
             bitmap_full[(i * block_size + j) * 4 + 1] = 0;
             bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+            bitmap_empty[(i * block_size + j) * 4] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
             // Horizontal border (i and j are swapped)
             bitmap_full[(j * block_size + i) * 4] = 0;
             bitmap_full[(j * block_size + i) * 4 + 1] = 0;
             bitmap_full[(j * block_size + i) * 4 + 2] = 0;
-            bitmap_empty[(j * block_size + i) * 4] = 160;
-            bitmap_empty[(j * block_size + i) * 4 + 1] = 160;
-            bitmap_empty[(j * block_size + i) * 4 + 2] = 160;
+            bitmap_empty[(j * block_size + i) * 4] = 170;
+            bitmap_empty[(j * block_size + i) * 4 + 1] = 170;
+            bitmap_empty[(j * block_size + i) * 4 + 2] = 170;
         }
         for (j = block_size - block_border - outer_border; j < block_size - outer_border; j++) {
             // Vertical border
             bitmap_full[(i * block_size + j) * 4] = 0;
             bitmap_full[(i * block_size + j) * 4 + 1] = 0;
             bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+            bitmap_empty[(i * block_size + j) * 4] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
             // Horizontal border (i and j are swapped)
             bitmap_full[(j * block_size + i) * 4] = 0;
             bitmap_full[(j * block_size + i) * 4 + 1] = 0;
             bitmap_full[(j * block_size + i) * 4 + 2] = 0;
-            bitmap_empty[(j * block_size + i) * 4] = 160;
-            bitmap_empty[(j * block_size + i) * 4 + 1] = 160;
-            bitmap_empty[(j * block_size + i) * 4 + 2] = 160;
+            bitmap_empty[(j * block_size + i) * 4] = 170;
+            bitmap_empty[(j * block_size + i) * 4 + 1] = 170;
+            bitmap_empty[(j * block_size + i) * 4 + 2] = 170;
         }
     }
     // Inner rectangle
@@ -434,9 +434,9 @@ static void reinitialize_block_bitmaps(HDC hdc) {
             bitmap_full[(i * block_size + j) * 4] = 0;
             bitmap_full[(i * block_size + j) * 4 + 1] = 0;
             bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 160;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 160;
+            bitmap_empty[(i * block_size + j) * 4] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
+            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
         }
     }
 
