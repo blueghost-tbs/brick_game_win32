@@ -156,6 +156,7 @@ static void tetris_init_after_cleananimation(void) {
     up_key_is_pressed = 0;
     down_key_is_pressed = 0;
 
+    current_brick_pos_x = 5;
     current_brick_pos_y = tetris_get_next_figure() - 1;
     ts.state = TS_NORMAL;
 }
