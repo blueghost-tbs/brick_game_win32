@@ -323,6 +323,6 @@ static void place_food(void) {
         food.y = rand() % BRICK_PLAYFIELD_HEIGHT;
     } while (snake_state.playfield[food.x][food.y] != BRICK_FIELD_EMPTY);
 
-    snake_state.playfield[food.x][food.y] = BRICK_FIELD_OCCUPIED;
+    snake_state.playfield[food.x][food.y] = BRICK_FIELD_OCCUPIED_INNER;
     add_block_to_redraw_rectangle(food.x, food.y);
 }
