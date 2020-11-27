@@ -1,10 +1,12 @@
 #ifndef _BRICK_H_
 #define _BRICK_H_
 
-#define BRICK_PLAYFIELD_WIDTH  10
-#define BRICK_PLAYFIELD_HEIGHT 20
-#define BRICK_FIELD_EMPTY       0
-#define BRICK_FIELD_OCCUPIED    1
+#define BRICK_PLAYFIELD_WIDTH     10
+#define BRICK_PLAYFIELD_HEIGHT    20
+#define BRICK_FIELD_EMPTY          0
+#define BRICK_FIELD_OCCUPIED       1
+#define BRICK_FIELD_OCCUPIED_INNER 2
+#define BRICK_FIELD_OCCUPIED_OUTER 3
 
 typedef struct {
     char left;

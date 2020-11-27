@@ -16,6 +16,7 @@
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
+static void fill_bitmap(unsigned char *bitmap, unsigned char outer_color, unsigned char inner_color);
 static void reinitialize_block_bitmaps(HDC hdc);
 static void set_font_size(HDC hdc, unsigned short size);
 static void initialize_game_interfaces(void);
@@ -27,6 +28,8 @@ static int block_size = 20;
 static int block_border = 2;
 static HBRUSH background_brush;
 static HBITMAP block_bitmap_full = NULL;
+static HBITMAP block_bitmap_full_inner = NULL;
+static HBITMAP block_bitmap_full_outer = NULL;
 static HBITMAP block_bitmap_empty = NULL;
 static HFONT hf = NULL;
 
@@ -275,6 +278,10 @@ static void draw_field(HDC hdc) {
     SelectObject(hdcfull, block_bitmap_full);
     HDC hdcempty = CreateCompatibleDC(hdc);
     SelectObject(hdcempty, block_bitmap_empty);
+    HDC hdcfull_outer = CreateCompatibleDC(hdc);
+    SelectObject(hdcfull_outer, block_bitmap_full_outer);
+    HDC hdcfull_inner = CreateCompatibleDC(hdc);
+    SelectObject(hdcfull_inner, block_bitmap_full_inner);
 
     // Draw next figure
     for (i = 0; i < 4; i++) {
@@ -284,10 +291,20 @@ static void draw_field(HDC hdc) {
             rect.right =  rect.left + block_size;
             rect.bottom = rect.top + block_size;
 
-            if (ts->next[i][j] == BRICK_FIELD_EMPTY) {
-                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
-            } else
-                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
+            switch (ts->next[i][j]) {
+                case BRICK_FIELD_EMPTY:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED_INNER:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED_OUTER:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_outer, 0, 0, SRCCOPY);
+                    break;
+            }
         }
     }
 
@@ -299,15 +316,27 @@ static void draw_field(HDC hdc) {
             rect.right = rect.left + block_size;
             rect.bottom = rect.top + block_size;
 
-            if (ts->playfield[i][j] == BRICK_FIELD_EMPTY) {
-                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
-            } else
-                BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
+            switch (ts->playfield[i][j]) {
+                case BRICK_FIELD_EMPTY:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED_INNER:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED_OUTER:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_outer, 0, 0, SRCCOPY);
+                    break;
+            }
         }
     }
 
     DeleteDC(hdcfull);
     DeleteDC(hdcempty);
+    DeleteDC(hdcfull_inner);
+    DeleteDC(hdcfull_outer);
     DeleteObject(pen);
 }
 
@@ -353,6 +382,44 @@ static void invalidate_window_part(HWND hwnd) {
     }
 }
 
+static void fill_bitmap(unsigned char *bitmap, unsigned char outer_color, unsigned char inner_color) {
+    int i, j;
+
+    // Borders
+    int outer_border = block_border * 7 / 10;
+    for (i = outer_border; i < block_size - outer_border; i++) {
+        for (j = outer_border; j < outer_border + block_border; j++) {
+            // Vertical border
+            bitmap[(i * block_size + j) * 4] = outer_color;
+            bitmap[(i * block_size + j) * 4 + 1] = outer_color;
+            bitmap[(i * block_size + j) * 4 + 2] = outer_color;
+            // Horizontal border (i and j are swapped)
+            bitmap[(j * block_size + i) * 4] = outer_color;
+            bitmap[(j * block_size + i) * 4 + 1] = outer_color;
+            bitmap[(j * block_size + i) * 4 + 2] = outer_color;
+        }
+        for (j = block_size - block_border - outer_border; j < block_size - outer_border; j++) {
+            // Vertical border
+            bitmap[(i * block_size + j) * 4] = outer_color;
+            bitmap[(i * block_size + j) * 4 + 1] = outer_color;
+            bitmap[(i * block_size + j) * 4 + 2] = outer_color;
+            // Horizontal border (i and j are swapped)
+            bitmap[(j * block_size + i) * 4] = outer_color;
+            bitmap[(j * block_size + i) * 4 + 1] = outer_color;
+            bitmap[(j * block_size + i) * 4 + 2] = outer_color;
+        }
+    }
+
+    // Inner rectangle
+    for (i = block_border * 2; i < block_size - block_border * 2; i++) {
+        for (j = block_border * 2; j < block_size - block_border * 2; j++) {
+            bitmap[(i * block_size + j) * 4] = inner_color;
+            bitmap[(i * block_size + j) * 4 + 1] = inner_color;
+            bitmap[(i * block_size + j) * 4 + 2] = inner_color;
+        }
+    }
+}
+
 static void reinitialize_block_bitmaps(HDC hdc) {
     // Memory allocation for new bitmaps
     unsigned char *bitmap_full = (unsigned char*)malloc(block_size * block_size * 4);
@@ -361,6 +428,7 @@ static void reinitialize_block_bitmaps(HDC hdc) {
         return;
     }
     memset(bitmap_full, 192, block_size * block_size * 4);
+
     unsigned char *bitmap_empty = (unsigned char*)malloc(block_size * block_size * 4);
     if (bitmap_empty == NULL) {
         // Not enough memory!
@@ -368,6 +436,20 @@ static void reinitialize_block_bitmaps(HDC hdc) {
         return;
     }
     memset(bitmap_empty, 192, block_size * block_size * 4);
+
+    unsigned char *bitmap_full_inner = (unsigned char*)malloc(block_size * block_size * 4);
+    if (bitmap_full_inner == NULL) {
+        // Not enough memory!
+        return;
+    }
+    memset(bitmap_full_inner, 192, block_size * block_size * 4);
+
+    unsigned char *bitmap_full_outer = (unsigned char*)malloc(block_size * block_size * 4);
+    if (bitmap_full_outer == NULL) {
+        // Not enough memory!
+        return;
+    }
+    memset(bitmap_full_outer, 192, block_size * block_size * 4);
 
     // Create and initialize BITMAPINFOHEADER for the 32-bit image
     BITMAPINFOHEADER bmih;
@@ -391,67 +473,31 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     pbmi->bmiHeader.biSizeImage = block_size * block_size * 4;
 
     // Fill bitmaps
-    int i, j;
-    // Borders
-    int outer_border = block_border * 7 / 10;
-    for (i = outer_border; i < block_size - outer_border; i++) {
-        for (j = outer_border; j < outer_border + block_border; j++) {
-            // Vertical border
-            bitmap_full[(i * block_size + j) * 4] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
-            // Horizontal border (i and j are swapped)
-            bitmap_full[(j * block_size + i) * 4] = 0;
-            bitmap_full[(j * block_size + i) * 4 + 1] = 0;
-            bitmap_full[(j * block_size + i) * 4 + 2] = 0;
-            bitmap_empty[(j * block_size + i) * 4] = 170;
-            bitmap_empty[(j * block_size + i) * 4 + 1] = 170;
-            bitmap_empty[(j * block_size + i) * 4 + 2] = 170;
-        }
-        for (j = block_size - block_border - outer_border; j < block_size - outer_border; j++) {
-            // Vertical border
-            bitmap_full[(i * block_size + j) * 4] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
-            // Horizontal border (i and j are swapped)
-            bitmap_full[(j * block_size + i) * 4] = 0;
-            bitmap_full[(j * block_size + i) * 4 + 1] = 0;
-            bitmap_full[(j * block_size + i) * 4 + 2] = 0;
-            bitmap_empty[(j * block_size + i) * 4] = 170;
-            bitmap_empty[(j * block_size + i) * 4 + 1] = 170;
-            bitmap_empty[(j * block_size + i) * 4 + 2] = 170;
-        }
-    }
-    // Inner rectangle
-    for (i = block_border * 2; i < block_size - block_border * 2; i++) {
-        for (j = block_border * 2; j < block_size - block_border * 2; j++) {
-            bitmap_full[(i * block_size + j) * 4] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 1] = 0;
-            bitmap_full[(i * block_size + j) * 4 + 2] = 0;
-            bitmap_empty[(i * block_size + j) * 4] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 1] = 170;
-            bitmap_empty[(i * block_size + j) * 4 + 2] = 170;
-        }
-    }
+    fill_bitmap(bitmap_full, 0, 0);
+    fill_bitmap(bitmap_empty, 170, 170);
+    fill_bitmap(bitmap_full_inner, 170, 0);
+    fill_bitmap(bitmap_full_outer, 0, 170);
 
     // Delete previous bitmaps
     if (block_bitmap_full != NULL)
         DeleteObject(block_bitmap_full);
     if (block_bitmap_empty != NULL)
         DeleteObject(block_bitmap_empty);
+    if (block_bitmap_full_inner != NULL)
+        DeleteObject(block_bitmap_full_inner);
+    if (block_bitmap_full_outer != NULL)
+        DeleteObject(block_bitmap_full_outer);
 
     block_bitmap_full = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
     block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_empty, pbmi, DIB_RGB_COLORS);
+    block_bitmap_full_outer = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full_outer, pbmi, DIB_RGB_COLORS);
+    block_bitmap_full_inner = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full_inner, pbmi, DIB_RGB_COLORS);
 
     free(pbmi);
     free(bitmap_full);
     free(bitmap_empty);
+    free(bitmap_full_inner);
+    free(bitmap_full_outer);
 }
 
 static void set_font_size(HDC hdc, unsigned short size) {
