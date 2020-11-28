@@ -305,6 +305,7 @@ static void snake_tick(void) {
     return;
 
 game_over:
+    snake.turn_in_progress = false;
     if (snake.wait_before_hit > 0) {
         snake.wait_before_hit--;
         return;
