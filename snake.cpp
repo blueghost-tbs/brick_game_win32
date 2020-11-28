@@ -1,5 +1,6 @@
 #include "brick.h"
 #include "cleananimation.h"
+#include "snake_levels.h"
 
 #include <windows.h>
 #include <time.h>
@@ -26,22 +27,12 @@ static void place_food(void);
 
 static brick_state_t snake_state;
 
-#define SNAKE_MOVE_DOWN            0
-#define SNAKE_MOVE_UP              1
-#define SNAKE_MOVE_RIGHT           2
-#define SNAKE_MOVE_LEFT            3
-
 #define SNAKE_MAX_SEGMENTS        30  
 #define SNAKE_SPEED              150
 
 #define SNAKE_STATE_NORMAL         0
 #define SNAKE_STATE_GAMEOVER       1
 #define SNAKE_STATE_CLEANANIMATION 2
-
-typedef struct {
-    char x;
-    char y;
-} segment_t;
 
 typedef struct {
     segment_t segments[SNAKE_MAX_SEGMENTS];
@@ -53,9 +44,10 @@ typedef struct {
     char state;
     char increase_length;
     char wait_before_hit;
+    char collected_food;
 } snake_t;
 
-static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0, 2};
+static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0, 2, 0};
 static segment_t food = {0, 0};
 static unsigned int snake_timer = 0;
 static unsigned char cleananimation_line = 0;
@@ -87,6 +79,8 @@ static brick_state_t *snake_get_state(void) {
 
 static void snake_init(void) {
     snake.state = SNAKE_STATE_CLEANANIMATION;
+    snake_state.level = 1;
+    snake_state.score = 0;
     cleananimation_init();
 }
 
@@ -95,7 +89,10 @@ static void snake_init_after_cleananimation() {
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < BRICK_PLAYFIELD_HEIGHT; j++) {
-            snake_state.playfield[i][j] = BRICK_FIELD_EMPTY;
+            if (snake_levels[snake_state.level - 1].level[j][i] == 0)
+                snake_state.playfield[i][j] = BRICK_FIELD_EMPTY;
+            else
+                snake_state.playfield[i][j] = BRICK_FIELD_OCCUPIED_OUTER;
         }
     }
 
@@ -105,9 +102,7 @@ static void snake_init_after_cleananimation() {
         }
     }
 
-    snake_state.score = 0;
     snake_state.score_changed = 1;
-    snake_state.level = 1;
     snake_state.level_changed = 1;
     snake_state.lines_since_level_increase = 0;
     snake_state.game_over_notification_flag = false;
@@ -122,14 +117,16 @@ static void snake_init_after_cleananimation() {
 
     snake.head = 2;
     snake.tail = 0;
-    snake.segments[0].x = 5; snake.segments[0].y = 0;
-    snake.segments[1].x = 5; snake.segments[1].y = 1;
-    snake.segments[2].x = 5; snake.segments[2].y = 2;
-    snake.move = SNAKE_MOVE_DOWN;
+
+    snake.segments[0] = snake_levels[snake_state.level - 1].start_segments[0];
+    snake.segments[1] = snake_levels[snake_state.level - 1].start_segments[1];
+    snake.segments[2] = snake_levels[snake_state.level - 1].start_segments[2];
+    snake.move = snake_levels[snake_state.level - 1].start_move;
     snake.delayed_move = -1;
     snake.state = SNAKE_STATE_NORMAL;
     snake.increase_length = 0;
     snake.wait_before_hit = 2;
+    snake.collected_food = 0;
 
     for (i = snake.tail; i <= snake.head; i++) {
         snake_state.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED;
@@ -255,7 +252,7 @@ static void snake_tick(void) {
     }
 
     // Check if bumped in ourselves
-    if ((snake_state.playfield[snake.segments[next_head].x][snake.segments[next_head].y] == BRICK_FIELD_OCCUPIED) &&
+    if ((snake_state.playfield[snake.segments[next_head].x][snake.segments[next_head].y] != BRICK_FIELD_EMPTY) &&
         !(snake.segments[next_head].x == food.x && snake.segments[next_head].y == food.y))
         goto game_over;
 
@@ -289,6 +286,15 @@ static void snake_tick(void) {
         snake_state.score += 100;
         snake_state.score_changed = 1;
         snake.increase_length++;
+        snake.collected_food++;
+        if (snake.collected_food >= 10) {
+            snake_state.level++;
+            if (snake_state.level > SNAKE_LEVELS)
+                snake_state.level = 1;
+            snake.state = SNAKE_STATE_CLEANANIMATION;
+            cleananimation_init();
+            return;
+        }
         place_food();
     }
 

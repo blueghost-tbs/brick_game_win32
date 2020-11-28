@@ -126,6 +126,10 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\snake_levels.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\tetrominos.h
 # End Source File
 # End Group
