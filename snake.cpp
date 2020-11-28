@@ -98,7 +98,7 @@ static void snake_init_after_cleananimation() {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            snake_state.next[i][j] = BRICK_FIELD_EMPTY;
+            snake_state.next[i][j] = BRICK_FIELD_OCCUPIED;
         }
     }
 
@@ -286,8 +286,12 @@ static void snake_tick(void) {
         snake_state.score += 100;
         snake_state.score_changed = 1;
         snake.increase_length++;
+
+        snake_state.next[3 - snake.collected_food % 4][3 - snake.collected_food / 4] = BRICK_FIELD_EMPTY;
+        snake_state.next_changed = true;
+
         snake.collected_food++;
-        if (snake.collected_food >= 10) {
+        if (snake.collected_food >= 16) {
             snake_state.level++;
             if (snake_state.level > SNAKE_LEVELS)
                 snake_state.level = 1;
