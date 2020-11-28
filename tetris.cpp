@@ -70,6 +70,7 @@ static struct {
     char state;
     char line;
     char cleared_lines;
+    char lines_since_level_increase;
 } ts = {TS_NORMAL, 0, 0};
 
 /*
@@ -139,7 +140,6 @@ static void tetris_init_after_cleananimation(void) {
     tetris_state.score_changed = 1;
     tetris_state.level = 1;
     tetris_state.level_changed = 1;
-    tetris_state.lines_since_level_increase = 0;
     tetris_state.game_over_notification_flag = false;
 
     tetris_state.rr.left = 0;
@@ -159,6 +159,7 @@ static void tetris_init_after_cleananimation(void) {
     current_brick_pos_x = 5;
     current_brick_pos_y = tetris_get_next_figure() - 1;
     ts.state = TS_NORMAL;
+    ts.lines_since_level_increase = 0;
 }
 
 static brick_state_t *tetris_get_state(void) {
@@ -269,10 +270,10 @@ static void tetris_game_loop(void) {
                 break;
         }
         tetris_state.score_changed = 1;
-        tetris_state.lines_since_level_increase += ts.cleared_lines;
+        ts.lines_since_level_increase += ts.cleared_lines;
 
-        if (tetris_state.lines_since_level_increase >= 10) {
-            tetris_state.lines_since_level_increase = 0;
+        if (ts.lines_since_level_increase >= 10) {
+            ts.lines_since_level_increase = 0;
             tetris_state.level++;
             tetris_state.level_changed = 1;
         }

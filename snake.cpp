@@ -104,7 +104,6 @@ static void snake_init_after_cleananimation() {
 
     snake_state.score_changed = 1;
     snake_state.level_changed = 1;
-    snake_state.lines_since_level_increase = 0;
     snake_state.game_over_notification_flag = false;
 
     snake_state.rr.left = 0;
