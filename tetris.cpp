@@ -140,6 +140,8 @@ static void tetris_init_after_cleananimation(void) {
     tetris_state.score_changed = 1;
     tetris_state.level = 1;
     tetris_state.level_changed = 1;
+    tetris_state.lives = 0;
+    tetris_state.lives_changed = 1;
     tetris_state.game_over_notification_flag = false;
 
     tetris_state.rr.left = 0;
