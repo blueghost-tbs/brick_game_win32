@@ -81,6 +81,7 @@ static void snake_init(void) {
     snake.state = SNAKE_STATE_CLEANANIMATION;
     snake_state.level = 1;
     snake_state.score = 0;
+    snake_state.lives = 9;
     cleananimation_init();
 }
 
@@ -104,6 +105,7 @@ static void snake_init_after_cleananimation() {
 
     snake_state.score_changed = 1;
     snake_state.level_changed = 1;
+    snake_state.lives_changed = 1;
     snake_state.game_over_notification_flag = false;
 
     snake_state.rr.left = 0;
@@ -310,8 +312,15 @@ game_over:
         snake.wait_before_hit--;
         return;
     }
-    snake_state.game_over_notification_flag = true;
-    snake.state = SNAKE_STATE_GAMEOVER;
+    if (snake_state.lives > 0) {
+        snake_state.lives--;
+        snake_state.lives_changed = true;
+        snake.state = SNAKE_STATE_CLEANANIMATION;
+        cleananimation_init();
+    } else {
+        snake_state.game_over_notification_flag = true;
+        snake.state = SNAKE_STATE_GAMEOVER;
+    }
     return;
 }
 
