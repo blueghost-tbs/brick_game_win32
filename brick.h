@@ -26,6 +26,8 @@ typedef struct {
     char score_changed;
     int level;
     char level_changed;
+    char lives;
+    char lives_changed;
 } brick_state_t;
 
 typedef struct {

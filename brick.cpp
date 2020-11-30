@@ -37,8 +37,10 @@ static HFONT hf = NULL;
 #define SCORE_TEXT_Y  (block_size / 4)
 #define LEVEL_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
 #define LEVEL_TEXT_Y  (block_size / 4) + block_size * 2
+#define LIVES_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
+#define LIVES_TEXT_Y  (block_size / 4) + block_size * 4
 #define NEXT_TEXT_X   (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
-#define NEXT_TEXT_Y   (block_size / 4) + block_size * 6
+#define NEXT_TEXT_Y   (block_size / 4) + block_size * 8
 
 /* Games */
 #define GAME_FIRST  0
@@ -271,6 +273,17 @@ static void draw_field(HDC hdc) {
     _snprintf(level, 31, "%d", ts->level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + block_size, level, strlen(level));
 
+    // Draw lives
+    SetRect(&rect, LIVES_TEXT_X,
+                   LIVES_TEXT_Y + block_size,
+                   LIVES_TEXT_X + block_size * 4,
+                   LIVES_TEXT_Y + 2 * block_size);
+    // Delete the previous lives because we don't erase the background with InvalidateRect to avoid flashing
+    FillRect(hdc, &rect, background_brush);
+    TextOutA(hdc, LIVES_TEXT_X, LIVES_TEXT_Y, "LIVES", 5);
+    _snprintf(level, 31, "%d", ts->lives);
+    TextOutA(hdc, LIVES_TEXT_X, LIVES_TEXT_Y + block_size, level, strlen(level));
+
     // Draw "next" label
     TextOutA(hdc, NEXT_TEXT_X, NEXT_TEXT_Y, "NEXT", 4);
 
@@ -287,7 +300,7 @@ static void draw_field(HDC hdc) {
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             rect.left = NEXT_TEXT_X + i * block_size;
-            rect.top = (j + 7) * block_size + block_size / 2;
+            rect.top = NEXT_TEXT_Y + (j + 1) * block_size;
             rect.right =  rect.left + block_size;
             rect.bottom = rect.top + block_size;
 
@@ -356,7 +369,7 @@ static void invalidate_window_part(HWND hwnd) {
 
     if (ts->next_changed) {
         rc.left = NEXT_TEXT_X;
-        rc.top = 7 * block_size + block_size / 2;
+        rc.top = NEXT_TEXT_Y + block_size;
         rc.right =  rc.left + block_size * 4;
         rc.bottom = rc.top + block_size * 4;
         InvalidateRect(hwnd, &rc, FALSE);
@@ -379,6 +392,15 @@ static void invalidate_window_part(HWND hwnd) {
                      LEVEL_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, FALSE);
         ts->level_changed = 0;
+    }
+
+    if (ts->lives_changed) {
+        SetRect(&rc, LIVES_TEXT_X,
+                     LIVES_TEXT_Y + block_size,
+                     LIVES_TEXT_X + block_size * 4,
+                     LIVES_TEXT_Y + 2 * block_size);
+        InvalidateRect(hwnd, &rc, FALSE);
+        ts->lives_changed = 0;
     }
 }
 
