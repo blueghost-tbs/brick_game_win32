@@ -252,7 +252,7 @@ static void snake_tick(void) {
             break;
     }
 
-    // Check if bumped in ourselves
+    // Check if we bumped in ourselves
     if ((brick_s.playfield[snake.segments[next_head].x][snake.segments[next_head].y] != BRICK_FIELD_EMPTY) &&
         !(snake.segments[next_head].x == food.x && snake.segments[next_head].y == food.y))
         goto game_over;
@@ -315,6 +315,8 @@ game_over:
     if (brick_s.lives > 0) {
         brick_s.lives--;
         brick_s.lives_changed = true;
+        brick_s.score -= snake.collected_food * 100;
+        brick_s.score_changed = true;
         snake.state = SNAKE_STATE_CLEANANIMATION;
         cleananimation_init();
     } else {
