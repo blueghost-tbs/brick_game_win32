@@ -25,7 +25,7 @@ static void snake_tick(void);
 static void add_block_to_redraw_rectangle(char x, char y);
 static void place_food(void);
 
-static brick_state_t snake_state;
+static brick_state_t brick_s;
 
 #define SNAKE_MAX_SEGMENTS        30  
 #define SNAKE_SPEED              150
@@ -74,14 +74,14 @@ void snake_init_interface(game_interface_t *iface) {
  * Static functions.
  ******************************************************************************/
 static brick_state_t *snake_get_state(void) {
-    return &snake_state;
+    return &brick_s;
 }
 
 static void snake_init(void) {
     snake.state = SNAKE_STATE_CLEANANIMATION;
-    snake_state.level = 1;
-    snake_state.score = 0;
-    snake_state.lives = 9;
+    brick_s.level = 1;
+    brick_s.score = 0;
+    brick_s.lives = 9;
     cleananimation_init();
 }
 
@@ -90,39 +90,39 @@ static void snake_init_after_cleananimation() {
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < BRICK_PLAYFIELD_HEIGHT; j++) {
-            if (snake_levels[snake_state.level - 1].level[j][i] == 0)
-                snake_state.playfield[i][j] = BRICK_FIELD_EMPTY;
+            if (snake_levels[brick_s.level - 1].level[j][i] == 0)
+                brick_s.playfield[i][j] = BRICK_FIELD_EMPTY;
             else
-                snake_state.playfield[i][j] = BRICK_FIELD_OCCUPIED_OUTER;
+                brick_s.playfield[i][j] = BRICK_FIELD_OCCUPIED_OUTER;
         }
     }
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            snake_state.next[i][j] = BRICK_FIELD_OCCUPIED;
+            brick_s.next[i][j] = BRICK_FIELD_OCCUPIED;
         }
     }
 
-    snake_state.score_changed = 1;
-    snake_state.level_changed = 1;
-    snake_state.lives_changed = 1;
-    snake_state.game_over_notification_flag = false;
+    brick_s.score_changed = 1;
+    brick_s.level_changed = 1;
+    brick_s.lives_changed = 1;
+    brick_s.game_over_notification_flag = false;
 
-    snake_state.rr.left = 0;
-    snake_state.rr.top = 0;
-    snake_state.rr.right = BRICK_PLAYFIELD_WIDTH;
-    snake_state.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
-    snake_state.rr.clean = 0;
+    brick_s.rr.left = 0;
+    brick_s.rr.top = 0;
+    brick_s.rr.right = BRICK_PLAYFIELD_WIDTH;
+    brick_s.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
+    brick_s.rr.clean = 0;
 
-    snake_state.next_changed = true;
+    brick_s.next_changed = true;
 
     snake.head = 2;
     snake.tail = 0;
 
-    snake.segments[0] = snake_levels[snake_state.level - 1].start_segments[0];
-    snake.segments[1] = snake_levels[snake_state.level - 1].start_segments[1];
-    snake.segments[2] = snake_levels[snake_state.level - 1].start_segments[2];
-    snake.move = snake_levels[snake_state.level - 1].start_move;
+    snake.segments[0] = snake_levels[brick_s.level - 1].start_segments[0];
+    snake.segments[1] = snake_levels[brick_s.level - 1].start_segments[1];
+    snake.segments[2] = snake_levels[brick_s.level - 1].start_segments[2];
+    snake.move = snake_levels[brick_s.level - 1].start_move;
     snake.delayed_move = -1;
     snake.state = SNAKE_STATE_NORMAL;
     snake.increase_length = 0;
@@ -130,7 +130,7 @@ static void snake_init_after_cleananimation() {
     snake.collected_food = 0;
 
     for (i = snake.tail; i <= snake.head; i++) {
-        snake_state.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED;
+        brick_s.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED;
     }
 
     srand(time(NULL));
@@ -194,13 +194,13 @@ static void snake_down_key_release(void) {
 }
 
 static void snake_next_figure_accepted(void) {
-    snake_state.next_changed = false;
+    brick_s.next_changed = false;
 }
 
 static void snake_game_loop(void) {
     if (snake.state == SNAKE_STATE_CLEANANIMATION) {
-        cleananimation(&snake_state);
-        if (cleananimation(&snake_state) == CLEANANIMATION_DONE)
+        cleananimation(&brick_s);
+        if (cleananimation(&brick_s) == CLEANANIMATION_DONE)
             snake_init_after_cleananimation();
         return;
     }
@@ -253,18 +253,18 @@ static void snake_tick(void) {
     }
 
     // Check if bumped in ourselves
-    if ((snake_state.playfield[snake.segments[next_head].x][snake.segments[next_head].y] != BRICK_FIELD_EMPTY) &&
+    if ((brick_s.playfield[snake.segments[next_head].x][snake.segments[next_head].y] != BRICK_FIELD_EMPTY) &&
         !(snake.segments[next_head].x == food.x && snake.segments[next_head].y == food.y))
         goto game_over;
 
-    snake_state.playfield[snake.segments[next_head].x][snake.segments[next_head].y] = BRICK_FIELD_OCCUPIED;
+    brick_s.playfield[snake.segments[next_head].x][snake.segments[next_head].y] = BRICK_FIELD_OCCUPIED;
     add_block_to_redraw_rectangle(snake.segments[next_head].x, snake.segments[next_head].y);
     snake.head = next_head;
 
     // Check if we reached the maximum length, in that case do not increase the length
     if (((next_head + 1) % SNAKE_MAX_SEGMENTS == snake.tail) ||
         (snake.increase_length == 0)) {
-        snake_state.playfield[snake.segments[snake.tail].x][snake.segments[snake.tail].y] = BRICK_FIELD_EMPTY;
+        brick_s.playfield[snake.segments[snake.tail].x][snake.segments[snake.tail].y] = BRICK_FIELD_EMPTY;
         add_block_to_redraw_rectangle(snake.segments[snake.tail].x, snake.segments[snake.tail].y);
         snake.tail = next_tail;
     }
@@ -272,7 +272,7 @@ static void snake_tick(void) {
     if (snake.increase_length > 0)
         snake.increase_length--;
 
-    snake_state.rr.clean = 0;
+    brick_s.rr.clean = 0;
 
     if (snake.delayed_move >= 0) {
         snake.move = snake.delayed_move;
@@ -284,18 +284,18 @@ static void snake_tick(void) {
     // Check if we hit the food
     if (snake.segments[next_head].x == food.x &&
         snake.segments[next_head].y == food.y) {
-        snake_state.score += 100;
-        snake_state.score_changed = 1;
+        brick_s.score += 100;
+        brick_s.score_changed = 1;
         snake.increase_length++;
 
-        snake_state.next[3 - snake.collected_food % 4][3 - snake.collected_food / 4] = BRICK_FIELD_EMPTY;
-        snake_state.next_changed = true;
+        brick_s.next[3 - snake.collected_food % 4][3 - snake.collected_food / 4] = BRICK_FIELD_EMPTY;
+        brick_s.next_changed = true;
 
         snake.collected_food++;
         if (snake.collected_food >= 16) {
-            snake_state.level++;
-            if (snake_state.level > SNAKE_LEVELS)
-                snake_state.level = 1;
+            brick_s.level++;
+            if (brick_s.level > SNAKE_LEVELS)
+                brick_s.level = 1;
             snake.state = SNAKE_STATE_CLEANANIMATION;
             cleananimation_init();
             return;
@@ -312,27 +312,27 @@ game_over:
         snake.wait_before_hit--;
         return;
     }
-    if (snake_state.lives > 0) {
-        snake_state.lives--;
-        snake_state.lives_changed = true;
+    if (brick_s.lives > 0) {
+        brick_s.lives--;
+        brick_s.lives_changed = true;
         snake.state = SNAKE_STATE_CLEANANIMATION;
         cleananimation_init();
     } else {
-        snake_state.game_over_notification_flag = true;
+        brick_s.game_over_notification_flag = true;
         snake.state = SNAKE_STATE_GAMEOVER;
     }
     return;
 }
 
 static void add_block_to_redraw_rectangle(char x, char y) {
-    if (y < snake_state.rr.top)
-        snake_state.rr.top = y;
-    if (y > snake_state.rr.bottom)
-        snake_state.rr.bottom = y;
-    if (x < snake_state.rr.left)
-        snake_state.rr.left = x;
-    if (x > snake_state.rr.right)
-        snake_state.rr.right = x;
+    if (y < brick_s.rr.top)
+        brick_s.rr.top = y;
+    if (y > brick_s.rr.bottom)
+        brick_s.rr.bottom = y;
+    if (x < brick_s.rr.left)
+        brick_s.rr.left = x;
+    if (x > brick_s.rr.right)
+        brick_s.rr.right = x;
 }
 
 static void place_food(void) {
@@ -340,8 +340,8 @@ static void place_food(void) {
     do {
         food.x = rand() % BRICK_PLAYFIELD_WIDTH;
         food.y = rand() % BRICK_PLAYFIELD_HEIGHT;
-    } while (snake_state.playfield[food.x][food.y] != BRICK_FIELD_EMPTY);
+    } while (brick_s.playfield[food.x][food.y] != BRICK_FIELD_EMPTY);
 
-    snake_state.playfield[food.x][food.y] = BRICK_FIELD_OCCUPIED_INNER;
+    brick_s.playfield[food.x][food.y] = BRICK_FIELD_OCCUPIED_INNER;
     add_block_to_redraw_rectangle(food.x, food.y);
 }
