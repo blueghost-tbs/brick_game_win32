@@ -33,6 +33,7 @@ static brick_state_t brick_s;
 #define SNAKE_STATE_NORMAL         0
 #define SNAKE_STATE_GAMEOVER       1
 #define SNAKE_STATE_CLEANANIMATION 2
+#define SNAKE_STATE_WINNING        3
 
 typedef struct {
     segment_t segments[SNAKE_MAX_SEGMENTS];
@@ -107,6 +108,7 @@ static void snake_init_after_cleananimation() {
     brick_s.level_changed = 1;
     brick_s.lives_changed = 1;
     brick_s.game_over_notification_flag = false;
+    brick_s.winning_notification_flag = false;
 
     brick_s.rr.left = 0;
     brick_s.rr.top = 0;
@@ -205,7 +207,8 @@ static void snake_game_loop(void) {
         return;
     }
 
-    if (snake.state == SNAKE_STATE_GAMEOVER)
+    if (snake.state == SNAKE_STATE_GAMEOVER ||
+        snake.state == SNAKE_STATE_WINNING)
         return;
 
     unsigned int t = GetTickCount();
@@ -294,8 +297,11 @@ static void snake_tick(void) {
         snake.collected_food++;
         if (snake.collected_food >= 16) {
             brick_s.level++;
-            if (brick_s.level > SNAKE_LEVELS)
-                brick_s.level = 1;
+            if (brick_s.level > SNAKE_LEVELS) {
+                snake.state = SNAKE_STATE_WINNING;
+                brick_s.winning_notification_flag = true;
+                return;
+            }
             snake.state = SNAKE_STATE_CLEANANIMATION;
             cleananimation_init();
             return;

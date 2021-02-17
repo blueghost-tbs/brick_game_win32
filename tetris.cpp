@@ -143,6 +143,7 @@ static void tetris_init_after_cleananimation(void) {
     brick_t.lives = 0;
     brick_t.lives_changed = 1;
     brick_t.game_over_notification_flag = false;
+    brick_t.winning_notification_flag = false;
 
     brick_t.rr.left = 0;
     brick_t.rr.top = 0;

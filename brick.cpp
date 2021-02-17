@@ -139,6 +139,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                         _snprintf(message, 100, "Game over! Your final score is %lu.\nWould you like to start a new game?", ts->score);
                         if (MessageBox(hwnd, TEXT(message), TEXT("Game over"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
                             games[active_game].game_init();
+                    } else if (ts->winning_notification_flag) {
+                        ts->winning_notification_flag = false;
+                        char message[100] = {'\0',};
+                        _snprintf(message, 100, "Congratulation! You won! Your final score is %lu.\nWould you like to start a new game?", ts->score);
+                        if (MessageBox(hwnd, TEXT(message), TEXT("You won!"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
+                            games[active_game].game_init();
                     }
                     break;
             }

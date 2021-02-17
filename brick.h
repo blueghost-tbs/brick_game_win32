@@ -22,6 +22,7 @@ typedef struct {
     char next[4][4];
     bool next_changed;
     bool game_over_notification_flag;
+    bool winning_notification_flag;
     unsigned long score;
     char score_changed;
     int level;
