@@ -1,5 +1,6 @@
 #include "brick.h"
 #include "cleananimation.h"
+#include "winanimation.h"
 #include "snake_levels.h"
 
 #include <windows.h>
@@ -33,7 +34,8 @@ static brick_state_t brick_s;
 #define SNAKE_STATE_NORMAL         0
 #define SNAKE_STATE_GAMEOVER       1
 #define SNAKE_STATE_CLEANANIMATION 2
-#define SNAKE_STATE_WINNING        3
+#define SNAKE_STATE_WINANIMATION   3
+#define SNAKE_STATE_WINNING        4
 
 typedef struct {
     segment_t segments[SNAKE_MAX_SEGMENTS];
@@ -51,7 +53,6 @@ typedef struct {
 static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0, 2, 0};
 static segment_t food = {0, 0};
 static unsigned int snake_timer = 0;
-static unsigned char cleananimation_line = 0;
 
 /******************************************************************************
  * Exported functions.
@@ -207,6 +208,14 @@ static void snake_game_loop(void) {
         return;
     }
 
+    if (snake.state == SNAKE_STATE_WINANIMATION) {
+        if (winanimation(&brick_s) == WINANIMATION_DONE) {
+            snake.state = SNAKE_STATE_WINNING;
+            brick_s.winning_notification_flag = true;
+        }
+        return;
+    }
+
     if (snake.state == SNAKE_STATE_GAMEOVER ||
         snake.state == SNAKE_STATE_WINNING)
         return;
@@ -298,8 +307,8 @@ static void snake_tick(void) {
         if (snake.collected_food >= 16) {
             brick_s.level++;
             if (brick_s.level > SNAKE_LEVELS) {
-                snake.state = SNAKE_STATE_WINNING;
-                brick_s.winning_notification_flag = true;
+                winanimation_init();
+                snake.state = SNAKE_STATE_WINANIMATION;
                 return;
             }
             snake.state = SNAKE_STATE_CLEANANIMATION;

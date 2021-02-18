@@ -104,6 +104,10 @@ SOURCE=.\snake.cpp
 
 SOURCE=.\tetris.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\winanimation.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -131,6 +135,10 @@ SOURCE=.\snake_levels.h
 # Begin Source File
 
 SOURCE=.\tetrominos.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\winanimation.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
