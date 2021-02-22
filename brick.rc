@@ -1,6 +1,6 @@
 #include "resource.h"
 
-IDI_ICON ICON "tetris.ico"
+IDI_ICON ICON "brick.ico"
 
 BRICKGAME MENU
 BEGIN
