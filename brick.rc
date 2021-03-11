@@ -1,21 +1,9 @@
 #include "resource.h"
+#include <windows.h>
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 
 IDI_ICON ICON "brick.ico"
 
-BRICKGAME MENU
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New game", IDM_FILE_NEW_GAME
-        MENUITEM "&Exit",     IDM_FILE_EXIT
-    END
-    POPUP "&Game"
-    BEGIN
-        MENUITEM "&Tetris",   IDM_GAME_TETRIS
-        MENUITEM "&Snake",    IDM_GAME_SNAKE
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&About",    IDM_HELP_ABOUT
-    END
-END
+#include "lang/en-US.rc"
+#include "lang/hu-HU.rc"

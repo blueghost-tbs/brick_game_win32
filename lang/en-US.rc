@@ -1,0 +1,19 @@
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+BRICKGAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New game", IDM_FILE_NEW_GAME
+        MENUITEM "&Exit",     IDM_FILE_EXIT
+    END
+    POPUP "&Game"
+    BEGIN
+        MENUITEM "&Tetris",   IDM_GAME_TETRIS
+        MENUITEM "&Snake",    IDM_GAME_SNAKE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",    IDM_HELP_ABOUT
+    END
+END
