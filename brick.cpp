@@ -14,6 +14,7 @@
 
 // Declaration of static functions
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+static void load_resources(HINSTANCE hInst);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
 static void fill_bitmap(unsigned char *bitmap, unsigned char outer_color, unsigned char inner_color);
@@ -42,6 +43,12 @@ static HFONT hf = NULL;
 #define NEXT_TEXT_X   (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
 #define NEXT_TEXT_Y   (block_size / 4) + block_size * 8
 
+/* String resources */
+TCHAR gameovertitle[64];
+TCHAR gameover[128];
+TCHAR youwontitle[64];
+TCHAR youwon[128];
+
 /* Games */
 #define GAME_FIRST  0
 #define GAME_TETRIS 0
@@ -51,6 +58,8 @@ game_interface_t games[GAME_LAST + 1];
 static short active_game = GAME_LAST;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
+    load_resources(hInstance);
+
     background_brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
 
     static TCHAR szAppName[] = TEXT("BrickGame");
@@ -135,15 +144,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     brick_state_t *ts = games[active_game].game_get_state();
                     if (ts->game_over_notification_flag) {
                         ts->game_over_notification_flag = false;
-                        char message[100] = {'\0',};
-                        _snprintf(message, 100, "Game over! Your final score is %lu.\nWould you like to start a new game?", ts->score);
-                        if (MessageBox(hwnd, TEXT(message), TEXT("Game over"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
+                        char message[128] = {'\0',};
+                        _snprintf(message, 128, gameover, ts->score);
+                        if (MessageBox(hwnd, message, gameovertitle, MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
                             games[active_game].game_init();
                     } else if (ts->winning_notification_flag) {
                         ts->winning_notification_flag = false;
-                        char message[100] = {'\0',};
-                        _snprintf(message, 100, "Congratulation! You won! Your final score is %lu.\nWould you like to start a new game?", ts->score);
-                        if (MessageBox(hwnd, TEXT(message), TEXT("You won!"), MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
+                        char message[128] = {'\0',};
+                        _snprintf(message, 128, youwon, ts->score);
+                        if (MessageBox(hwnd, message, youwontitle, MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
                             games[active_game].game_init();
                     }
                     break;
@@ -233,6 +242,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+static void load_resources(HINSTANCE hInst) {
+    LoadString(hInst, IDS_GAMEOVERTITLE, gameovertitle, sizeof(gameovertitle) / sizeof(gameovertitle[0]));
+    LoadString(hInst, IDS_GAMEOVER, gameover, sizeof(gameover) / sizeof(gameover[0]));
+    LoadString(hInst, IDS_YOUWONTITLE, youwontitle, sizeof(youwontitle) / sizeof(youwontitle[0]));
+    LoadString(hInst, IDS_YOUWON, youwon, sizeof(youwon) / sizeof(youwon[0]));
 }
 
 static void draw_field(HDC hdc) {

@@ -17,3 +17,11 @@ BEGIN
         MENUITEM "&Névjegy",    IDM_HELP_ABOUT
     END
 END
+
+STRINGTABLE
+BEGIN
+    IDS_GAMEOVERTITLE "Vége a játéknak!"
+    IDS_GAMEOVER "Vége a játéknak! %lu pontot ért el.\nSzeretne új játékot kezdeni?"
+    IDS_YOUWONTITLE "Ön nyert!"
+    IDS_YOUWON "Gratulálok! Ön nyert! %lu pontot ért el.\nSzeretne új játékot kezdeni?"
+END

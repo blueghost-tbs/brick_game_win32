@@ -17,3 +17,11 @@ BEGIN
         MENUITEM "&About",    IDM_HELP_ABOUT
     END
 END
+
+STRINGTABLE
+BEGIN
+    IDS_GAMEOVERTITLE "Game over!"
+    IDS_GAMEOVER "Game over! Your final score is %lu.\nWould you like to start a new game?"
+    IDS_YOUWONTITLE "You won!"
+    IDS_YOUWON "Congratulation! You won! Your final score is %lu.\nWould you like to start a new game?"
+END

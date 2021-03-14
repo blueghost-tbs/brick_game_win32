@@ -9,4 +9,9 @@
 #define IDM_GAME_TETRIS   40004
 #define IDM_GAME_SNAKE    40005
 
+#define IDS_GAMEOVERTITLE 50001
+#define IDS_GAMEOVER      50002
+#define IDS_YOUWONTITLE   50003
+#define IDS_YOUWON        50004
+
 #endif /* _RESOURCE_H_ */
