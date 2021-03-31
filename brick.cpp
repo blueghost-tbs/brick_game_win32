@@ -1,4 +1,5 @@
 #include "brick.h"
+#include "gfx.h"
 #include "game_interfaces.h"
 #include "resource.h"
 
@@ -17,7 +18,6 @@ static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static void load_resources(HINSTANCE hInst);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
-static void fill_bitmap(unsigned char *bitmap, unsigned char outer_color, unsigned char inner_color);
 static void reinitialize_block_bitmaps(HDC hdc);
 static void set_font_size(HDC hdc, unsigned short size);
 static void initialize_game_interfaces(void);
@@ -426,44 +426,6 @@ static void invalidate_window_part(HWND hwnd) {
     }
 }
 
-static void fill_bitmap(unsigned char *bitmap, unsigned char outer_color, unsigned char inner_color) {
-    int i, j;
-
-    // Borders
-    int outer_border = block_border * 7 / 10;
-    for (i = outer_border; i < block_size - outer_border; i++) {
-        for (j = outer_border; j < outer_border + block_border; j++) {
-            // Vertical border
-            bitmap[(i * block_size + j) * 4] = outer_color;
-            bitmap[(i * block_size + j) * 4 + 1] = outer_color;
-            bitmap[(i * block_size + j) * 4 + 2] = outer_color;
-            // Horizontal border (i and j are swapped)
-            bitmap[(j * block_size + i) * 4] = outer_color;
-            bitmap[(j * block_size + i) * 4 + 1] = outer_color;
-            bitmap[(j * block_size + i) * 4 + 2] = outer_color;
-        }
-        for (j = block_size - block_border - outer_border; j < block_size - outer_border; j++) {
-            // Vertical border
-            bitmap[(i * block_size + j) * 4] = outer_color;
-            bitmap[(i * block_size + j) * 4 + 1] = outer_color;
-            bitmap[(i * block_size + j) * 4 + 2] = outer_color;
-            // Horizontal border (i and j are swapped)
-            bitmap[(j * block_size + i) * 4] = outer_color;
-            bitmap[(j * block_size + i) * 4 + 1] = outer_color;
-            bitmap[(j * block_size + i) * 4 + 2] = outer_color;
-        }
-    }
-
-    // Inner rectangle
-    for (i = block_border * 2; i < block_size - block_border * 2; i++) {
-        for (j = block_border * 2; j < block_size - block_border * 2; j++) {
-            bitmap[(i * block_size + j) * 4] = inner_color;
-            bitmap[(i * block_size + j) * 4 + 1] = inner_color;
-            bitmap[(i * block_size + j) * 4 + 2] = inner_color;
-        }
-    }
-}
-
 static void reinitialize_block_bitmaps(HDC hdc) {
     // Memory allocation for new bitmaps
     unsigned char *bitmap_full = (unsigned char*)malloc(block_size * block_size * 4);
@@ -517,10 +479,10 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     pbmi->bmiHeader.biSizeImage = block_size * block_size * 4;
 
     // Fill bitmaps
-    fill_bitmap(bitmap_full, 0, 0);
-    fill_bitmap(bitmap_empty, 170, 170);
-    fill_bitmap(bitmap_full_inner, 170, 0);
-    fill_bitmap(bitmap_full_outer, 0, 170);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED, bitmap_full);
+    gfx_get_brick(block_size, BRICK_FIELD_EMPTY, bitmap_empty);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER, bitmap_full_inner);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_OUTER, bitmap_full_outer);
 
     // Delete previous bitmaps
     if (block_bitmap_full != NULL)

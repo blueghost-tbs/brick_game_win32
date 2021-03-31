@@ -98,6 +98,10 @@ SOURCE=.\cleananimation.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\gfx.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\snake.cpp
 # End Source File
 # Begin Source File
@@ -123,6 +127,10 @@ SOURCE=.\cleananimation.h
 # Begin Source File
 
 SOURCE=.\game_interfaces.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\gfx.h
 # End Source File
 # Begin Source File
 

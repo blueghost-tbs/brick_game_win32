@@ -1,12 +1,24 @@
 #ifndef _BRICK_H_
 #define _BRICK_H_
 
-#define BRICK_PLAYFIELD_WIDTH     10
-#define BRICK_PLAYFIELD_HEIGHT    20
-#define BRICK_FIELD_EMPTY          0
-#define BRICK_FIELD_OCCUPIED       1
-#define BRICK_FIELD_OCCUPIED_INNER 2
-#define BRICK_FIELD_OCCUPIED_OUTER 3
+#define BRICK_PLAYFIELD_WIDTH         10
+#define BRICK_PLAYFIELD_HEIGHT        20
+
+/* Field states */
+#define BRICK_FIELD_EMPTY              0
+#define BRICK_FIELD_OCCUPIED           1
+#define BRICK_FIELD_OCCUPIED_LIGHTBLUE 2
+#define BRICK_FIELD_OCCUPIED_DARKBLUE  3
+#define BRICK_FIELD_OCCUPIED_ORANGE    4
+#define BRICK_FIELD_OCCUPIED_YELLOW    5
+#define BRICK_FIELD_OCCUPIED_GREEN     6
+#define BRICK_FIELD_OCCUPIED_RED       7
+#define BRICK_FIELD_OCCUPIED_MAGENTA   8
+#define BRICK_FIELD_OCCUPIED_INNER     9
+#define BRICK_FIELD_OCCUPIED_OUTER    10
+
+/* 1 default color (white) and BRICK_COLORS other color */
+#define BRICK_COLORS                   7
 
 typedef struct {
     char left;
