@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-static int mode = GFX_MODE_MONOCHROME;
+static int mode = GFX_MODE_COLOR;
 
 static void fill_monochrome(int size,
                             unsigned char *bitmap,
@@ -59,14 +59,28 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
                 fill_color(size, bitmap, 0, 0, 0, 0, 0);
                 break;
             case BRICK_FIELD_OCCUPIED:
+                fill_color(size, bitmap, 128, 128, 128, 1, 1);
+                break;
             case BRICK_FIELD_OCCUPIED_LIGHTBLUE:
+                fill_color(size, bitmap, 0, 128, 128, 1, 1);
+                break;
             case BRICK_FIELD_OCCUPIED_DARKBLUE:
+                fill_color(size, bitmap, 0, 0, 128, 1, 1);
+                break;
             case BRICK_FIELD_OCCUPIED_ORANGE:
+                fill_color(size, bitmap, 128, 60, 0, 1, 1);
+                break;
             case BRICK_FIELD_OCCUPIED_YELLOW:
+                fill_color(size, bitmap, 128, 128, 0, 1, 1);
+                break;
             case BRICK_FIELD_OCCUPIED_GREEN:
-            case BRICK_FIELD_OCCUPIED_RED:
-            case BRICK_FIELD_OCCUPIED_MAGENTA:
                 fill_color(size, bitmap, 0, 128, 0, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_RED:
+                fill_color(size, bitmap, 128, 0, 0, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_MAGENTA:
+                fill_color(size, bitmap, 128, 0, 128, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER:
                 fill_color(size, bitmap, 128, 128, 128, 1, 0);

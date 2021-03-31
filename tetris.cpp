@@ -420,7 +420,7 @@ static int tetris_get_next_figure(void) {
 
     for (i = tetrominos[current_figure]->size; i > 0; i--) {
         for (j = 0; j < tetrominos[current_figure]->size; j++) {
-            if (tetrominos[current_figure]->states[current_state][j][i] == 1)
+            if (tetrominos[current_figure]->states[current_state][j][i] > 0)
                 goto exit;
         }
     }
@@ -437,8 +437,8 @@ static void draw_figure(char need_redraw) {
         for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
-            if (tetrominos[current_figure]->states[current_state][i][j] == 1) {
-                brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = BRICK_FIELD_OCCUPIED;
+            if (tetrominos[current_figure]->states[current_state][i][j] > 0) {
+                brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = tetrominos[current_figure]->states[current_state][i][j];
                 if (!need_redraw)
                     continue;
                 if (current_brick_pos_x + i < brick_t.rr.left) {
@@ -470,7 +470,7 @@ static void clear_figure(void) {
         for (j = 0; j < size; j++) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
-            if (tetrominos[current_figure]->states[current_state][i][j] == 1) {
+            if (tetrominos[current_figure]->states[current_state][i][j] > 0) {
                 brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = BRICK_FIELD_EMPTY;
                 if (current_brick_pos_x + i < brick_t.rr.left) {
                     brick_t.rr.left = current_brick_pos_x + i;
@@ -499,7 +499,7 @@ static bool is_collide(void) {
 
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
-            if (tetrominos[current_figure]->states[current_state][i][j] == 1) {
+            if (tetrominos[current_figure]->states[current_state][i][j] > 0) {
                 if (current_brick_pos_x + i < 0)
                     return true;
                 if (current_brick_pos_x + i >= BRICK_PLAYFIELD_WIDTH)
@@ -508,7 +508,7 @@ static bool is_collide(void) {
                     continue;
                 if (current_brick_pos_y + j >= BRICK_PLAYFIELD_HEIGHT)
                     return true;
-                if (brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] == BRICK_FIELD_OCCUPIED)
+                if (brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] > 0)
                     return true;
             }
         }
