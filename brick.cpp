@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define CLIENTWIDTH    300 // 220 playfield + 80 scoreboard
+#define CLIENTWIDTH    304 // 220 playfield + 84 scoreboard
 #define CLIENTHEIGHT   420
 #define WINDOWSTYLE    WS_OVERLAPPEDWINDOW
 
@@ -41,13 +41,13 @@ static HBITMAP block_bitmap_full_red = NULL;
 static HBITMAP block_bitmap_full_magenta = NULL;
 static HFONT hf = NULL;
 
-#define SCORE_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
+#define SCORE_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
 #define SCORE_TEXT_Y  (block_size / 4)
-#define LEVEL_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
+#define LEVEL_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
 #define LEVEL_TEXT_Y  (block_size / 4) + block_size * 2
-#define LIVES_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
+#define LIVES_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
 #define LIVES_TEXT_Y  (block_size / 4) + block_size * 4
-#define NEXT_TEXT_X   (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 5)
+#define NEXT_TEXT_X   (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
 #define NEXT_TEXT_Y   (block_size / 4) + block_size * 8
 
 /* String resources */
@@ -264,7 +264,9 @@ static void draw_field(HDC hdc) {
     brick_state_t *ts = games[active_game].game_get_state();
     HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
     LOGBRUSH lbrush = {BS_SOLID, RGB(0, 0, 0), 0};
+    LOGBRUSH lbrush_gray = {BS_SOLID, RGB(128, 128, 128), 0};
     HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_SQUARE | PS_JOIN_BEVEL, block_border, &lbrush, 0, NULL);
+    HPEN pen_gray = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_SQUARE | PS_JOIN_BEVEL, block_border, &lbrush_gray, 0, NULL);
     char score[32] = {'\0',};
     char level[32] = {'\0',};
 
@@ -275,6 +277,26 @@ static void draw_field(HDC hdc) {
     LineTo(hdc, block_size * (BRICK_PLAYFIELD_WIDTH + 1) - block_size / 4, block_size * (BRICK_PLAYFIELD_HEIGHT + 1) - block_size / 4);
     LineTo(hdc, block_size / 4, block_size * (BRICK_PLAYFIELD_HEIGHT + 1) - block_size / 4);
     LineTo(hdc, block_size / 4, block_size / 4);
+    SelectObject(hdc, pen_gray);
+    MoveToEx(hdc, block_size / 4 + block_border, block_size / 4 + block_border, NULL);
+    LineTo(hdc, block_size * (BRICK_PLAYFIELD_WIDTH + 1) - block_size / 4 - block_border, block_size / 4 + block_border);
+    LineTo(hdc, block_size * (BRICK_PLAYFIELD_WIDTH + 1) - block_size / 4 - block_border, block_size * (BRICK_PLAYFIELD_HEIGHT + 1) - block_size / 4 - block_border);
+    LineTo(hdc, block_size / 4 + block_border, block_size * (BRICK_PLAYFIELD_HEIGHT + 1) - block_size / 4 - block_border);
+    LineTo(hdc, block_size / 4 + block_border, block_size / 4 + block_border);
+
+    // Draw next field rectangle
+    SelectObject(hdc, pen);
+    MoveToEx(hdc, NEXT_TEXT_X - block_border * 2, NEXT_TEXT_Y + block_size - block_border * 2, NULL);
+    LineTo(hdc, NEXT_TEXT_X + block_size * 4 + block_border * 2, NEXT_TEXT_Y + block_size - block_border * 2);
+    LineTo(hdc, NEXT_TEXT_X + block_size * 4 + block_border * 2, NEXT_TEXT_Y + block_size * 5 + block_border * 2);
+    LineTo(hdc, NEXT_TEXT_X - block_border * 2, NEXT_TEXT_Y + block_size * 5 + block_border * 2);
+    LineTo(hdc, NEXT_TEXT_X - block_border * 2, NEXT_TEXT_Y + block_size - block_border * 2);
+    SelectObject(hdc, pen_gray);
+    MoveToEx(hdc, NEXT_TEXT_X - block_border, NEXT_TEXT_Y + block_size - block_border, NULL);
+    LineTo(hdc, NEXT_TEXT_X + block_size * 4 + block_border, NEXT_TEXT_Y + block_size - block_border);
+    LineTo(hdc, NEXT_TEXT_X + block_size * 4 + block_border, NEXT_TEXT_Y + block_size * 5 + block_border);
+    LineTo(hdc, NEXT_TEXT_X - block_border, NEXT_TEXT_Y + block_size * 5 + block_border);
+    LineTo(hdc, NEXT_TEXT_X - block_border, NEXT_TEXT_Y + block_size - block_border);
 
     // Set font & color
     SetBkMode(hdc, TRANSPARENT);
@@ -444,6 +466,7 @@ static void draw_field(HDC hdc) {
     DeleteDC(hdcfull_red);
     DeleteDC(hdcfull_magenta);
     DeleteObject(pen);
+    DeleteObject(pen_gray);
 }
 
 static void invalidate_window_part(HWND hwnd) {

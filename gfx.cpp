@@ -56,37 +56,37 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
     } else if (mode == GFX_MODE_COLOR) {
         switch (color) {
             case BRICK_FIELD_EMPTY:
-                fill_color(size, bitmap, 0, 0, 0, 0, 0);
+                fill_color(size, bitmap, 15, 15, 15, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED:
-                fill_color(size, bitmap, 128, 128, 128, 1, 1);
+                fill_color(size, bitmap, 140, 140, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_LIGHTBLUE:
-                fill_color(size, bitmap, 0, 128, 128, 1, 1);
+                fill_color(size, bitmap, 0, 140, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_DARKBLUE:
-                fill_color(size, bitmap, 0, 0, 128, 1, 1);
+                fill_color(size, bitmap, 0, 0, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_ORANGE:
-                fill_color(size, bitmap, 128, 60, 0, 1, 1);
+                fill_color(size, bitmap, 140, 70, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_YELLOW:
-                fill_color(size, bitmap, 128, 128, 0, 1, 1);
+                fill_color(size, bitmap, 140, 140, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_GREEN:
-                fill_color(size, bitmap, 0, 128, 0, 1, 1);
+                fill_color(size, bitmap, 0, 140, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_RED:
-                fill_color(size, bitmap, 128, 0, 0, 1, 1);
+                fill_color(size, bitmap, 140, 0, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_MAGENTA:
-                fill_color(size, bitmap, 128, 0, 128, 1, 1);
+                fill_color(size, bitmap, 140, 0, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER:
-                fill_color(size, bitmap, 128, 128, 128, 1, 0);
+                fill_color(size, bitmap, 140, 140, 140, 1, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_OUTER:
-                fill_color(size, bitmap, 128, 128, 128, 0, 1);
+                fill_color(size, bitmap, 140, 140, 140, 0, 1);
                 break;
         }
     }
