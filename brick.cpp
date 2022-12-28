@@ -236,7 +236,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     games[active_game].game_init();
                     break;
                 case IDM_HELP_ABOUT:
-                    MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nVersion 1.0"), TEXT("Brick Game"), MB_ICONINFORMATION);
+                    MessageBox(NULL, TEXT("Brick Game by Tibor Lajos Füzi\n\nVersion 1.1"), TEXT("Brick Game"), MB_ICONINFORMATION);
                     break;
                 case IDM_GAME_TETRIS:
                     change_game(GAME_TETRIS, hwnd);
