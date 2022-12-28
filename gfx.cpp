@@ -30,6 +30,10 @@ void gfx_set_mode(int set_mode) {
     }
 }
 
+int gfx_get_mode(void) {
+    return mode;
+}
+
 void gfx_get_brick(int size, int color, unsigned char *bitmap) {
     if (mode == GFX_MODE_MONOCHROME) {
         switch (color) {

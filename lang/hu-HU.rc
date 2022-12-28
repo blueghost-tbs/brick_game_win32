@@ -4,13 +4,18 @@ BRICKGAME MENU
 BEGIN
     POPUP "&Fájl"
     BEGIN
-        MENUITEM "&Új játék", IDM_FILE_NEW_GAME
-        MENUITEM "&Kilépés",  IDM_FILE_EXIT
+        MENUITEM "&Új játék",   IDM_FILE_NEW_GAME
+        MENUITEM "&Kilépés",    IDM_FILE_EXIT
     END
     POPUP "&Játék"
     BEGIN
-        MENUITEM "&Tetrisz",   IDM_GAME_TETRIS
-        MENUITEM "&Kígyó",    IDM_GAME_SNAKE
+        MENUITEM "&Tetrisz",    IDM_GAME_TETRIS
+        MENUITEM "&Kígyó",      IDM_GAME_SNAKE
+    END
+    POPUP "&Grafika"
+    BEGIN
+        MENUITEM "&Monokróm",   IDM_GFX_MONOCHROME
+        MENUITEM "&Színes",     IDM_GFX_COLOR, CHECKED
     END
     POPUP "&Súgó"
     BEGIN

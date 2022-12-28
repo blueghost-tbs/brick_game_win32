@@ -22,6 +22,7 @@ static void reinitialize_block_bitmaps(HDC hdc);
 static void set_font_size(HDC hdc, unsigned short size);
 static void initialize_game_interfaces(void);
 static void change_game(int game, HWND hwnd);
+static void change_gfx(int gfx, HWND hwnd);
 
 static int minimum_window_width = CLIENTWIDTH;
 static int minimum_window_height = CLIENTHEIGHT;
@@ -242,6 +243,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     break;
                 case IDM_GAME_SNAKE:
                     change_game(GAME_SNAKE, hwnd);
+                    break;
+                case IDM_GFX_COLOR:
+                    change_gfx(GFX_MODE_COLOR, hwnd);
+                    break;
+                case IDM_GFX_MONOCHROME:
+                    change_gfx(GFX_MODE_MONOCHROME, hwnd);
                     break;
             }
             return 0;
@@ -664,5 +671,27 @@ static void change_game(int game, HWND hwnd) {
         active_game = game;
         games[active_game].game_init();
         CheckMenuRadioItem(menu_game, GAME_FIRST, GAME_LAST, active_game, MF_BYPOSITION);
+    }
+}
+
+static void change_gfx(int gfx, HWND hwnd) {
+    HMENU menu = GetMenu(hwnd);
+    HMENU menu_gfx = GetSubMenu(menu, 2);
+    HDC hdc = GetDC(hwnd);
+
+    if (gfx_get_mode() != gfx) {
+        gfx_set_mode(gfx);
+        reinitialize_block_bitmaps(hdc);
+
+        // Redraw the whole playfield
+        brick_state_t *ts = games[active_game].game_get_state();
+        ts->rr.left = 0;
+        ts->rr.top = 0;
+        ts->rr.right = BRICK_PLAYFIELD_WIDTH;
+        ts->rr.bottom = BRICK_PLAYFIELD_HEIGHT;
+        ts->rr.clean = 0;
+        ts->next_changed = true;
+
+        CheckMenuRadioItem(menu_gfx, GFX_MODE_FIRST, GFX_MODE_LAST, gfx, MF_BYPOSITION);
     }
 }
