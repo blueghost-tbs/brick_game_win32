@@ -275,7 +275,7 @@ static void snake_tick(void) {
         add_block_to_redraw_rectangle(snake.segments[snake.tail].x, snake.segments[snake.tail].y);
         snake.tail = next_tail;
     }
-    
+
     if (snake.increase_length > 0)
         snake.increase_length--;
 

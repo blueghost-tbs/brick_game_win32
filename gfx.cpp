@@ -94,7 +94,6 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
                 break;
         }
     }
-    
 }
 
 /******************************************************************************

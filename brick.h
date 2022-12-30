@@ -17,9 +17,6 @@
 #define BRICK_FIELD_OCCUPIED_INNER     9
 #define BRICK_FIELD_OCCUPIED_OUTER    10
 
-/* 1 default color (white) and BRICK_COLORS other color */
-#define BRICK_COLORS                   7
-
 typedef struct {
     char left;
     char right;
