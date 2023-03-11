@@ -244,8 +244,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                 case IDM_GAME_SNAKE:
                     change_game(GAME_SNAKE, hwnd);
                     break;
-                case IDM_GFX_COLOR:
-                    change_gfx(GFX_MODE_COLOR, hwnd);
+                case IDM_GFX_COLORED_TILE:
+                    change_gfx(GFX_MODE_COLORED_TILE, hwnd);
+                    break;
+                case IDM_GFX_COLORED_PYRAMID:
+                    change_gfx(GFX_MODE_COLORED_PYRAMID, hwnd);
                     break;
                 case IDM_GFX_MONOCHROME:
                     change_gfx(GFX_MODE_MONOCHROME, hwnd);

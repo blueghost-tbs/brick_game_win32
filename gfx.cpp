@@ -3,25 +3,34 @@
 
 #include <string.h>
 
-static int mode = GFX_MODE_COLOR;
+static int mode = GFX_MODE_COLORED_TILE;
 
 static void fill_monochrome(int size,
                             unsigned char *bitmap,
                             unsigned char outer_color,
                             unsigned char inner_color);
 
-static void fill_color(int size,
-                       unsigned char *bitmap,
-                       unsigned char red,
-                       unsigned char green,
-                       unsigned char blue,
-                       unsigned char inner,
-                       unsigned char outer);
+static void fill_colored_tile(int size,
+                              unsigned char *bitmap,
+                              unsigned char red,
+                              unsigned char green,
+                              unsigned char blue,
+                              unsigned char inner,
+                              unsigned char outer);
+
+static void fill_colored_pyramid(int size,
+                                 unsigned char* bitmap,
+                                 unsigned char red,
+                                 unsigned char green,
+                                 unsigned char blue,
+                                 unsigned char inner,
+                                 unsigned char outer);
 
 void gfx_set_mode(int set_mode) {
     switch (set_mode) {
         case GFX_MODE_MONOCHROME:
-        case GFX_MODE_COLOR:
+        case GFX_MODE_COLORED_TILE:
+        case GFX_MODE_COLORED_PYRAMID:
             mode = set_mode;
             break;
         default:
@@ -57,40 +66,76 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
                 fill_monochrome(size, bitmap, 0, 170);
                 break;
         }
-    } else if (mode == GFX_MODE_COLOR) {
+    } else if (mode == GFX_MODE_COLORED_TILE) {
         switch (color) {
             case BRICK_FIELD_EMPTY:
-                fill_color(size, bitmap, 15, 15, 15, 1, 1);
+                fill_colored_tile(size, bitmap, 15, 15, 15, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED:
-                fill_color(size, bitmap, 140, 140, 140, 1, 1);
+                fill_colored_tile(size, bitmap, 140, 140, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_LIGHTBLUE:
-                fill_color(size, bitmap, 0, 140, 140, 1, 1);
+                fill_colored_tile(size, bitmap, 0, 140, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_DARKBLUE:
-                fill_color(size, bitmap, 0, 0, 140, 1, 1);
+                fill_colored_tile(size, bitmap, 0, 0, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_ORANGE:
-                fill_color(size, bitmap, 140, 70, 0, 1, 1);
+                fill_colored_tile(size, bitmap, 140, 70, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_YELLOW:
-                fill_color(size, bitmap, 140, 140, 0, 1, 1);
+                fill_colored_tile(size, bitmap, 140, 140, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_GREEN:
-                fill_color(size, bitmap, 0, 140, 0, 1, 1);
+                fill_colored_tile(size, bitmap, 0, 140, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_RED:
-                fill_color(size, bitmap, 140, 0, 0, 1, 1);
+                fill_colored_tile(size, bitmap, 140, 0, 0, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_MAGENTA:
-                fill_color(size, bitmap, 140, 0, 140, 1, 1);
+                fill_colored_tile(size, bitmap, 140, 0, 140, 1, 1);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER:
-                fill_color(size, bitmap, 140, 140, 140, 1, 0);
+                fill_colored_tile(size, bitmap, 140, 140, 140, 1, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_OUTER:
-                fill_color(size, bitmap, 140, 140, 140, 0, 1);
+                fill_colored_tile(size, bitmap, 140, 140, 140, 0, 1);
+                break;
+        }
+    } else if (mode == GFX_MODE_COLORED_PYRAMID) {
+        switch (color) {
+            case BRICK_FIELD_EMPTY:
+                fill_colored_pyramid(size, bitmap, 15, 15, 15, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED:
+                fill_colored_pyramid(size, bitmap, 145, 145, 145, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_LIGHTBLUE:
+                fill_colored_pyramid(size, bitmap, 5, 145, 145, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_DARKBLUE:
+                fill_colored_pyramid(size, bitmap, 5, 5, 145, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_ORANGE:
+                fill_colored_pyramid(size, bitmap, 145, 75, 5, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_YELLOW:
+                fill_colored_pyramid(size, bitmap, 145, 145, 5, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_GREEN:
+                fill_colored_pyramid(size, bitmap, 5, 145, 5, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_RED:
+                fill_colored_pyramid(size, bitmap, 145, 5, 5, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_MAGENTA:
+                fill_colored_pyramid(size, bitmap, 145, 5, 145, 1, 1);
+                break;
+            case BRICK_FIELD_OCCUPIED_INNER:
+                fill_colored_pyramid(size, bitmap, 145, 145, 145, 1, 0);
+                break;
+            case BRICK_FIELD_OCCUPIED_OUTER:
+                fill_colored_pyramid(size, bitmap, 145, 145, 145, 0, 1);
                 break;
         }
     }
@@ -144,13 +189,124 @@ static void fill_monochrome(int size,
     }
 }
 
-static void fill_color(int size,
-                       unsigned char *bitmap,
-                       unsigned char red,
-                       unsigned char green,
-                       unsigned char blue,
-                       unsigned char inner,
-                       unsigned char outer) {
+static void fill_colored_pyramid(int size,
+                                 unsigned char *bitmap,
+                                 unsigned char red,
+                                 unsigned char green,
+                                 unsigned char blue,
+                                 unsigned char inner,
+                                 unsigned char outer) {
+    int i, j;
+    float f;
+    int color_gradient;
+
+    unsigned char red_0 = (unsigned char)(red * 0.3);
+    unsigned char green_0 = (unsigned char)(green * 0.3);
+    unsigned char blue_0 = (unsigned char)(blue * 0.3);
+
+    unsigned char red_1 = (unsigned char)(red * 0.5);
+    unsigned char green_1 = (unsigned char)(green * 0.5);
+    unsigned char blue_1 = (unsigned char)(blue * 0.5);
+
+    f = red * 1.35f;
+    unsigned char red_2 = (unsigned char)(f > 254 ? 255 : f);
+    f = green * 1.35f;
+    unsigned char green_2 = (unsigned char)(f > 254 ? 255 : f);
+    f = blue * 1.35f;
+    unsigned char blue_2 = (unsigned char)(f > 254 ? 255 : f);
+
+    f = red * 1.8f;
+    unsigned char red_3 = (unsigned char)(f > 254 ? 255 : f);
+    f = green * 1.8f;
+    unsigned char green_3 = (unsigned char)(f > 254 ? 255 : f);
+    f = blue * 1.8f;
+    unsigned char blue_3 = (unsigned char)(f > 254 ? 255 : f);
+
+    // Borders
+    int block_border = size / 10;
+    if (block_border < 2)
+        block_border = 2;
+
+    memset(bitmap, 0, size * size * 4);
+
+    if (outer) {
+        // Outer color
+        for (i = 0; i < size; i++) {
+            for (j = 0; j < size; j++) {
+                color_gradient = (int)((float)((size - i) + j) / size * 10 - 5);
+                // Exclude the square in the center
+                if ((i > block_border * 2)        &&
+                    (i < size - block_border * 2) &&
+                    (j > block_border * 2)        &&
+                    (j < size - block_border * 2))
+                    continue;
+                bitmap[(i * size + j) * 4] = blue + color_gradient;
+                bitmap[(i * size + j) * 4 + 1] = green + color_gradient;
+                bitmap[(i * size + j) * 4 + 2] = red + color_gradient;
+            }
+        }
+    }
+
+    if (inner) {
+        // Draw innner pyramid
+        // Bottom color
+        for (i = block_border * 2; i < size / 2; i++) {
+            for (j = block_border * 2; j < size - block_border * 2; j++) {
+                if (i > j)
+                    continue;
+                if (i > size - j)
+                    continue;
+                bitmap[(i * size + j) * 4] = blue_0;
+                bitmap[(i * size + j) * 4 + 1] = green_0;
+                bitmap[(i * size + j) * 4 + 2] = red_0;
+            }
+        }
+        // Right color
+        for (i = block_border * 2; i < size - block_border * 2; i++) {
+            for (j = size / 2; j < size - block_border * 2; j++) {
+                if (i > j)
+                    continue;
+                if (i < size - j)
+                    continue;
+                bitmap[(i * size + j) * 4] = blue_1;
+                bitmap[(i * size + j) * 4 + 1] = green_1;
+                bitmap[(i * size + j) * 4 + 2] = red_1;
+            }
+        }
+        // Left color
+        for (i = block_border * 2; i < size - block_border * 2; i++) {
+            for (j = block_border * 2; j <= size / 2 ; j++) {
+                if (i < j)
+                    continue;
+                if (i > size - j)
+                    continue;
+                bitmap[(i * size + j) * 4] = blue_2;
+                bitmap[(i * size + j) * 4 + 1] = green_2;
+                bitmap[(i * size + j) * 4 + 2] = red_2;
+            }
+        }
+        // Top color
+        for (i = size / 2; i < size - block_border * 2; i++) {
+            for (j = block_border * 2; j < size - block_border * 2; j++) {
+                if (i < j)
+                    continue;
+                if (i < size - j)
+                    continue;
+                bitmap[(i * size + j) * 4] = blue_3;
+                bitmap[(i * size + j) * 4 + 1] = green_3;
+                bitmap[(i * size + j) * 4 + 2] = red_3;
+            }
+        }
+    }
+}
+
+static void fill_colored_tile(int size,
+                              unsigned char* bitmap,
+                              unsigned char red,
+                              unsigned char green,
+                              unsigned char blue,
+                              unsigned char inner,
+                              unsigned char outer) {
     int i, j;
     float f;
 
@@ -180,7 +336,6 @@ static void fill_color(int size,
     int block_border = size / 10;
     if (block_border < 2)
         block_border = 2;
-    int outer_border = block_border * 7 / 10;
 
     memset(bitmap, 0, size * size * 4);
 

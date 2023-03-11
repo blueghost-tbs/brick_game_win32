@@ -4,22 +4,23 @@ BRICKGAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&New game",   IDM_FILE_NEW_GAME
-        MENUITEM "&Exit",       IDM_FILE_EXIT
+        MENUITEM "&New game",        IDM_FILE_NEW_GAME
+        MENUITEM "&Exit",            IDM_FILE_EXIT
     END
     POPUP "&Game"
     BEGIN
-        MENUITEM "&Tetris",     IDM_GAME_TETRIS
-        MENUITEM "&Snake",      IDM_GAME_SNAKE
+        MENUITEM "&Tetris",          IDM_GAME_TETRIS
+        MENUITEM "&Snake",           IDM_GAME_SNAKE
     END
     POPUP "G&raphics"
     BEGIN
-        MENUITEM "&Monochrome", IDM_GFX_MONOCHROME
-        MENUITEM "&Color",      IDM_GFX_COLOR, CHECKED
+        MENUITEM "&Monochrome",      IDM_GFX_MONOCHROME
+        MENUITEM "Colored &tile",    IDM_GFX_COLORED_TILE, CHECKED
+        MENUITEM "Colored &pyramid", IDM_GFX_COLORED_PYRAMID
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About",      IDM_HELP_ABOUT
+        MENUITEM "&About",           IDM_HELP_ABOUT
     END
 END
 
