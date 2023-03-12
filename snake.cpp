@@ -132,7 +132,7 @@ static void snake_init_after_cleananimation() {
     snake.collected_food = 0;
 
     for (i = snake.tail; i <= snake.head; i++) {
-        brick_s.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED;
+        brick_s.playfield[snake.segments[i].x][snake.segments[i].y] = BRICK_FIELD_OCCUPIED_ORANGE;
     }
 
     srand(time(NULL));
@@ -264,7 +264,7 @@ static void snake_tick(void) {
         !(snake.segments[next_head].x == food.x && snake.segments[next_head].y == food.y))
         goto game_over;
 
-    brick_s.playfield[snake.segments[next_head].x][snake.segments[next_head].y] = BRICK_FIELD_OCCUPIED;
+    brick_s.playfield[snake.segments[next_head].x][snake.segments[next_head].y] = BRICK_FIELD_OCCUPIED_ORANGE;
     add_block_to_redraw_rectangle(snake.segments[next_head].x, snake.segments[next_head].y);
     snake.head = next_head;
 
