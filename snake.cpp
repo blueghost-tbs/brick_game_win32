@@ -8,7 +8,6 @@
 
 /* Interface static function prototypes */
 static void snake_init(void);
-static brick_state_t *snake_get_state(void);
 static void snake_right_key_press(void);
 static void snake_left_key_press(void);
 static void snake_right_key_release(void);
@@ -25,8 +24,6 @@ static void snake_init_after_cleananimation();
 static void snake_tick(void);
 static void add_block_to_redraw_rectangle(char x, char y);
 static void place_food(void);
-
-static brick_state_t brick_s;
 
 #define SNAKE_MAX_SEGMENTS        30  
 #define SNAKE_SPEED              150
@@ -57,7 +54,6 @@ static unsigned int snake_timer = 0;
  * Exported functions.
  ******************************************************************************/
 void snake_init_interface(game_interface_t *iface) {
-    iface->game_get_state = snake_get_state;
     iface->game_init = snake_init;
     iface->game_right_key_press = snake_right_key_press;
     iface->game_left_key_press = snake_left_key_press;
@@ -74,10 +70,6 @@ void snake_init_interface(game_interface_t *iface) {
 /******************************************************************************
  * Static functions.
  ******************************************************************************/
-static brick_state_t *snake_get_state(void) {
-    return &brick_s;
-}
-
 static void snake_init(void) {
     snake.state = SNAKE_STATE_CLEANANIMATION;
     brick_s.level = 1;
@@ -201,14 +193,14 @@ static void snake_next_figure_accepted(void) {
 
 static void snake_game_loop(void) {
     if (snake.state == SNAKE_STATE_CLEANANIMATION) {
-        cleananimation(&brick_s);
-        if (cleananimation(&brick_s) == CLEANANIMATION_DONE)
+        cleananimation();
+        if (cleananimation() == CLEANANIMATION_DONE)
             snake_init_after_cleananimation();
         return;
     }
 
     if (snake.state == SNAKE_STATE_WINANIMATION) {
-        winanimation(&brick_s);
+        winanimation();
         return;
     }
 

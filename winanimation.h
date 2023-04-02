@@ -6,6 +6,6 @@
 #define WINANIMATION_PROGRESS 0
 
 void winanimation_init(void);
-int  winanimation(brick_state_t *state);
+int  winanimation();
 
 #endif /* _WINANIMATION_H_ */

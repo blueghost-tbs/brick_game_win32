@@ -7,6 +7,6 @@
 #define CLEANANIMATION_DONE     1
 
 void cleananimation_init(void);
-int  cleananimation(brick_state_t *state);
+int  cleananimation();
 
 #endif /* _CLEANANIMATION_H_ */

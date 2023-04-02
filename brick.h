@@ -41,7 +41,6 @@ typedef struct {
 } brick_state_t;
 
 typedef struct {
-    brick_state_t* (*game_get_state)(void);
     void (*game_init)(void);
     void (*game_right_key_press)(void);
     void (*game_left_key_press)(void);
@@ -56,5 +55,7 @@ typedef struct {
 } game_interface_t;
 
 void reset_redraw_rectangle(redraw_rectangle_t *rr);
+
+extern brick_state_t brick_s;
 
 #endif /* _BRICK_H_ */

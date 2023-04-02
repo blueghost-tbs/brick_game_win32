@@ -8,7 +8,6 @@
 
 /* Interface static function prototypes */
 static void tetris_init(void);
-static brick_state_t *tetris_get_state(void);
 static void tetris_right_key_press(void);
 static void tetris_left_key_press(void);
 static void tetris_right_key_release(void);
@@ -37,7 +36,6 @@ static void move_down_lines(int line);
 static void tetris_tick(void);
 static void notify_next_figure();
 
-static brick_state_t brick_t;
 static int current_brick_pos_x = 5;
 static int current_brick_pos_y = -1;
 static unsigned int current_figure = 0;
@@ -99,7 +97,6 @@ const static int level_speed[LEVEL_SPEEDS_NUM] = {
  * Exported functions.
  ******************************************************************************/
 void tetris_init_interface(game_interface_t *iface) {
-    iface->game_get_state = tetris_get_state;
     iface->game_init = tetris_init;
     iface->game_right_key_press = tetris_right_key_press;
     iface->game_left_key_press = tetris_left_key_press;
@@ -126,32 +123,32 @@ static void tetris_init_after_cleananimation(void) {
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < BRICK_PLAYFIELD_HEIGHT; j++) {
-            brick_t.playfield[i][j] = BRICK_FIELD_EMPTY;
+            brick_s.playfield[i][j] = BRICK_FIELD_EMPTY;
         }
     }
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            brick_t.next[i][j] = BRICK_FIELD_EMPTY;
+            brick_s.next[i][j] = BRICK_FIELD_EMPTY;
         }
     }
 
-    brick_t.score = 0;
-    brick_t.score_changed = 1;
-    brick_t.level = 1;
-    brick_t.level_changed = 1;
-    brick_t.lives = 0;
-    brick_t.lives_changed = 1;
-    brick_t.game_over_notification_flag = false;
-    brick_t.winning_notification_flag = false;
+    brick_s.score = 0;
+    brick_s.score_changed = 1;
+    brick_s.level = 1;
+    brick_s.level_changed = 1;
+    brick_s.lives = 0;
+    brick_s.lives_changed = 1;
+    brick_s.game_over_notification_flag = false;
+    brick_s.winning_notification_flag = false;
 
-    brick_t.rr.left = 0;
-    brick_t.rr.top = 0;
-    brick_t.rr.right = BRICK_PLAYFIELD_WIDTH;
-    brick_t.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
-    brick_t.rr.clean = 0;
+    brick_s.rr.left = 0;
+    brick_s.rr.top = 0;
+    brick_s.rr.right = BRICK_PLAYFIELD_WIDTH;
+    brick_s.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
+    brick_s.rr.clean = 0;
 
-    brick_t.next_changed = true;
+    brick_s.next_changed = true;
     srand(time(NULL));
 
     left_key_is_pressed = 0;
@@ -163,10 +160,6 @@ static void tetris_init_after_cleananimation(void) {
     current_brick_pos_y = tetris_get_next_figure() - 1;
     ts.state = TS_NORMAL;
     ts.lines_since_level_increase = 0;
-}
-
-static brick_state_t *tetris_get_state(void) {
-    return &brick_t;
 }
 
 static void tetris_right_key_press(void) {
@@ -230,13 +223,13 @@ static void tetris_down_key_release(void) {
 }
 
 static void tetris_next_figure_accepted(void) {
-    brick_t.next_changed = false;
+    brick_s.next_changed = false;
 }
 
 static void tetris_game_loop(void) {
     if (ts.state == TS_CLEANANIMATION) {
-        cleananimation(&brick_t);
-        if (cleananimation(&brick_t) == CLEANANIMATION_DONE)
+        cleananimation();
+        if (cleananimation() == CLEANANIMATION_DONE)
             tetris_init_after_cleananimation();
         return;
     }
@@ -260,25 +253,25 @@ static void tetris_game_loop(void) {
         switch (ts.cleared_lines) {
             case 1:
             default:
-                brick_t.score += 100 * brick_t.level;
+                brick_s.score += 100 * brick_s.level;
                 break;
             case 2:
-                brick_t.score += 300 * brick_t.level;
+                brick_s.score += 300 * brick_s.level;
                 break;
             case 3:
-                brick_t.score += 500 * brick_t.level;
+                brick_s.score += 500 * brick_s.level;
                 break;
             case 4:
-                brick_t.score += 800 * brick_t.level;
+                brick_s.score += 800 * brick_s.level;
                 break;
         }
-        brick_t.score_changed = 1;
+        brick_s.score_changed = 1;
         ts.lines_since_level_increase += ts.cleared_lines;
 
         if (ts.lines_since_level_increase >= 10) {
             ts.lines_since_level_increase = 0;
-            brick_t.level++;
-            brick_t.level_changed = 1;
+            brick_s.level++;
+            brick_s.level_changed = 1;
         }
 
         ts.cleared_lines = 0;
@@ -288,12 +281,12 @@ static void tetris_game_loop(void) {
 
     unsigned int t = GetTickCount();
     int speed = 1000;
-    if (brick_t.level < 1)
+    if (brick_s.level < 1)
         speed = level_speed[0];
-    else if (brick_t.level > LEVEL_SPEEDS_NUM)
+    else if (brick_s.level > LEVEL_SPEEDS_NUM)
         speed = level_speed[LEVEL_SPEEDS_NUM - 1];
     else
-        speed = level_speed[brick_t.level - 1];
+        speed = level_speed[brick_s.level - 1];
 
     if (t > gravity_timer + speed) {
         tetris_tick();
@@ -340,7 +333,7 @@ static void tetris_tick(void) {
     if (ts.state != TS_NORMAL)
         return;
 
-    char it_was_clean = brick_t.rr.clean;
+    char it_was_clean = brick_s.rr.clean;
     int line = -1;
 
     clear_figure();
@@ -348,13 +341,13 @@ static void tetris_tick(void) {
     if (is_collide()) {
         current_brick_pos_y--;
         if (it_was_clean)
-            reset_redraw_rectangle(&brick_t.rr);
+            reset_redraw_rectangle(&brick_s.rr);
         draw_figure(0);
 
         if (current_brick_pos_y < 0) {
             draw_figure(1);
             ts.state = TS_GAMEOVER;
-            brick_t.game_over_notification_flag = true;
+            brick_s.game_over_notification_flag = true;
             return;
         }
 
@@ -438,24 +431,24 @@ static void draw_figure(char need_redraw) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
             if (tetrominos[current_figure]->states[current_state][i][j] > 0) {
-                brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = tetrominos[current_figure]->states[current_state][i][j];
+                brick_s.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = tetrominos[current_figure]->states[current_state][i][j];
                 if (!need_redraw)
                     continue;
-                if (current_brick_pos_x + i < brick_t.rr.left) {
-                    brick_t.rr.left = current_brick_pos_x + i;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_x + i < brick_s.rr.left) {
+                    brick_s.rr.left = current_brick_pos_x + i;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_x + i > brick_t.rr.right) {
-                    brick_t.rr.right = current_brick_pos_x + i;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_x + i > brick_s.rr.right) {
+                    brick_s.rr.right = current_brick_pos_x + i;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_y + j < brick_t.rr.top) {
-                    brick_t.rr.top = current_brick_pos_y + j;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_y + j < brick_s.rr.top) {
+                    brick_s.rr.top = current_brick_pos_y + j;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_y + j > brick_t.rr.bottom) {
-                    brick_t.rr.bottom = current_brick_pos_y + j;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_y + j > brick_s.rr.bottom) {
+                    brick_s.rr.bottom = current_brick_pos_y + j;
+                    brick_s.rr.clean = 0;
                 }
             }
         }
@@ -471,22 +464,22 @@ static void clear_figure(void) {
             if (current_brick_pos_x + i < 0 || current_brick_pos_y + j < 0)
                 continue;
             if (tetrominos[current_figure]->states[current_state][i][j] > 0) {
-                brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = BRICK_FIELD_EMPTY;
-                if (current_brick_pos_x + i < brick_t.rr.left) {
-                    brick_t.rr.left = current_brick_pos_x + i;
-                    brick_t.rr.clean = 0;
+                brick_s.playfield[current_brick_pos_x + i][current_brick_pos_y + j] = BRICK_FIELD_EMPTY;
+                if (current_brick_pos_x + i < brick_s.rr.left) {
+                    brick_s.rr.left = current_brick_pos_x + i;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_x + i > brick_t.rr.right) {
-                    brick_t.rr.right = current_brick_pos_x + i;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_x + i > brick_s.rr.right) {
+                    brick_s.rr.right = current_brick_pos_x + i;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_y + j < brick_t.rr.top) {
-                    brick_t.rr.top = current_brick_pos_y + j;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_y + j < brick_s.rr.top) {
+                    brick_s.rr.top = current_brick_pos_y + j;
+                    brick_s.rr.clean = 0;
                 }
-                if (current_brick_pos_y + j > brick_t.rr.bottom) {
-                    brick_t.rr.bottom = current_brick_pos_y + j;
-                    brick_t.rr.clean = 0;
+                if (current_brick_pos_y + j > brick_s.rr.bottom) {
+                    brick_s.rr.bottom = current_brick_pos_y + j;
+                    brick_s.rr.clean = 0;
                 }
             }
         }
@@ -508,7 +501,7 @@ static bool is_collide(void) {
                     continue;
                 if (current_brick_pos_y + j >= BRICK_PLAYFIELD_HEIGHT)
                     return true;
-                if (brick_t.playfield[current_brick_pos_x + i][current_brick_pos_y + j] > 0)
+                if (brick_s.playfield[current_brick_pos_x + i][current_brick_pos_y + j] > 0)
                     return true;
             }
         }
@@ -529,14 +522,14 @@ static void rotate_left(void) {
 }
 
 static void tetris_move_right(void) {
-    char it_was_clean = brick_t.rr.clean;
+    char it_was_clean = brick_s.rr.clean;
 
     clear_figure();
     current_brick_pos_x++;
     if (is_collide()) {
         current_brick_pos_x--;
         if (it_was_clean)
-            reset_redraw_rectangle(&brick_t.rr);
+            reset_redraw_rectangle(&brick_s.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
@@ -544,14 +537,14 @@ static void tetris_move_right(void) {
 }
 
 static void tetris_move_left(void) {
-    char it_was_clean = brick_t.rr.clean;
+    char it_was_clean = brick_s.rr.clean;
 
     clear_figure();
     current_brick_pos_x--;
     if (is_collide()) {
         current_brick_pos_x++;
         if (it_was_clean)
-            reset_redraw_rectangle(&brick_t.rr);
+            reset_redraw_rectangle(&brick_s.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
@@ -562,14 +555,14 @@ static void tetris_up_key(void) {
     if (tetrominos[current_figure]->states_num == 1)
         return;
 
-    char it_was_clean = brick_t.rr.clean;
+    char it_was_clean = brick_s.rr.clean;
 
     clear_figure();
     rotate_right();
     if (is_collide()) {
         rotate_left();
         if (it_was_clean)
-            reset_redraw_rectangle(&brick_t.rr);
+            reset_redraw_rectangle(&brick_s.rr);
         draw_figure(0);
     } else {
         draw_figure(1);
@@ -581,7 +574,7 @@ static int search_full_line(void) {
 
     for (i = BRICK_PLAYFIELD_HEIGHT - 1; i >= 0; i--) {
         for (j = 0; j < BRICK_PLAYFIELD_WIDTH; j++) {
-            if (brick_t.playfield[j][i] == BRICK_FIELD_EMPTY)
+            if (brick_s.playfield[j][i] == BRICK_FIELD_EMPTY)
                 break;
         }
         if (j == BRICK_PLAYFIELD_WIDTH) {
@@ -597,25 +590,25 @@ static void clean_line(int line) {
     int i;
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
-        brick_t.playfield[i][line] = BRICK_FIELD_EMPTY;
+        brick_s.playfield[i][line] = BRICK_FIELD_EMPTY;
     }
 
-    if (brick_t.rr.right < BRICK_PLAYFIELD_WIDTH - 1 ||
-        brick_t.rr.left > 0) {
-        brick_t.rr.clean = 0;
+    if (brick_s.rr.right < BRICK_PLAYFIELD_WIDTH - 1 ||
+        brick_s.rr.left > 0) {
+        brick_s.rr.clean = 0;
     }
 
-    brick_t.rr.right = BRICK_PLAYFIELD_WIDTH - 1;
-    brick_t.rr.left = 0;
+    brick_s.rr.right = BRICK_PLAYFIELD_WIDTH - 1;
+    brick_s.rr.left = 0;
 
-    if (line < brick_t.rr.top) {
-        brick_t.rr.top = line;
-        brick_t.rr.clean = 0;
+    if (line < brick_s.rr.top) {
+        brick_s.rr.top = line;
+        brick_s.rr.clean = 0;
     }
 
-    if (line > brick_t.rr.bottom) {
-        brick_t.rr.bottom = line;
-        brick_t.rr.clean = 0;
+    if (line > brick_s.rr.bottom) {
+        brick_s.rr.bottom = line;
+        brick_s.rr.clean = 0;
     }
 
     ts.cleared_lines++;
@@ -628,9 +621,9 @@ static void move_down_lines(int line) {
     for (i = line - 1; i >= 0; i--) {
         empty = 1;
         for (j = 0; j < BRICK_PLAYFIELD_WIDTH; j++) {
-            if (brick_t.playfield[j][i] != BRICK_FIELD_EMPTY)
+            if (brick_s.playfield[j][i] != BRICK_FIELD_EMPTY)
                 empty = 0;
-            brick_t.playfield[j][i + 1] = brick_t.playfield[j][i];
+            brick_s.playfield[j][i + 1] = brick_s.playfield[j][i];
         }
         if (empty)
             break;
@@ -639,25 +632,25 @@ static void move_down_lines(int line) {
     if (i == -1) {
         // Clean the top line.
         for (j = 0; j < BRICK_PLAYFIELD_WIDTH; j++)
-            brick_t.playfield[j][0] = BRICK_FIELD_EMPTY;
+            brick_s.playfield[j][0] = BRICK_FIELD_EMPTY;
     }
 
-    if (brick_t.rr.right < BRICK_PLAYFIELD_WIDTH - 1 ||
-        brick_t.rr.left > 0) {
-        brick_t.rr.clean = 0;
+    if (brick_s.rr.right < BRICK_PLAYFIELD_WIDTH - 1 ||
+        brick_s.rr.left > 0) {
+        brick_s.rr.clean = 0;
     }
 
-    brick_t.rr.right = BRICK_PLAYFIELD_WIDTH - 1;
-    brick_t.rr.left = 0;
+    brick_s.rr.right = BRICK_PLAYFIELD_WIDTH - 1;
+    brick_s.rr.left = 0;
 
-    if (i + 1 < brick_t.rr.top) {
-        brick_t.rr.top = i + 1;
-        brick_t.rr.clean = 0;
+    if (i + 1 < brick_s.rr.top) {
+        brick_s.rr.top = i + 1;
+        brick_s.rr.clean = 0;
     }
 
-    if (line > brick_t.rr.bottom) {
-        brick_t.rr.bottom = line;
-        brick_t.rr.clean = 0;
+    if (line > brick_s.rr.bottom) {
+        brick_s.rr.bottom = line;
+        brick_s.rr.clean = 0;
     }
 }
 
@@ -666,15 +659,15 @@ static void notify_next_figure(void) {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            brick_t.next[i][j] = 0;
+            brick_s.next[i][j] = 0;
         }
     }
 
     for (i = 0; i < tetrominos[next_figure]->size; i++) {
         for (j = 0; j < tetrominos[next_figure]->size; j++) {
-            brick_t.next[i][j] = tetrominos[next_figure]->states[next_state][i][j];
+            brick_s.next[i][j] = tetrominos[next_figure]->states[next_state][i][j];
         }
     }
 
-    brick_t.next_changed = true;
+    brick_s.next_changed = true;
 }

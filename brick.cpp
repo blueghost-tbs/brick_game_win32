@@ -65,6 +65,9 @@ TCHAR youwon[128];
 game_interface_t games[GAME_LAST + 1];
 static short active_game = GAME_LAST;
 
+/* Global brick game state shared between modules */
+brick_state_t brick_s;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
     load_resources(hInstance);
 
@@ -149,17 +152,16 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     games[active_game].game_loop();
                     invalidate_window_part(hwnd);
                     /* Check for game over */
-                    brick_state_t *ts = games[active_game].game_get_state();
-                    if (ts->game_over_notification_flag) {
-                        ts->game_over_notification_flag = false;
+                    if (brick_s.game_over_notification_flag) {
+                        brick_s.game_over_notification_flag = false;
                         char message[128] = {'\0',};
-                        _snprintf(message, 128, gameover, ts->score);
+                        _snprintf(message, 128, gameover, brick_s.score);
                         if (MessageBox(hwnd, message, gameovertitle, MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
                             games[active_game].game_init();
-                    } else if (ts->winning_notification_flag) {
-                        ts->winning_notification_flag = false;
+                    } else if (brick_s.winning_notification_flag) {
+                        brick_s.winning_notification_flag = false;
                         char message[128] = {'\0',};
-                        _snprintf(message, 128, youwon, ts->score);
+                        _snprintf(message, 128, youwon, brick_s.score);
                         if (MessageBox(hwnd, message, youwontitle, MB_APPLMODAL | MB_ICONINFORMATION | MB_YESNO) == IDYES)
                             games[active_game].game_init();
                     }
@@ -271,7 +273,6 @@ static void load_resources(HINSTANCE hInst) {
 static void draw_field(HDC hdc) {
     int i, j;
     RECT rect;
-    brick_state_t *ts = games[active_game].game_get_state();
     HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
     LOGBRUSH lbrush = {BS_SOLID, RGB(0, 0, 0), 0};
     LOGBRUSH lbrush_gray = {BS_SOLID, RGB(128, 128, 128), 0};
@@ -320,7 +321,7 @@ static void draw_field(HDC hdc) {
     // Delete the previous score because we don't erase the background with InvalidateRect to avoid flashing
     FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y, "SCORE", 5);
-    _snprintf(score, 31, "%lu", ts->score);
+    _snprintf(score, 31, "%lu", brick_s.score);
     TextOutA(hdc, SCORE_TEXT_X, SCORE_TEXT_Y + block_size, score, strlen(score));
 
     // Draw level
@@ -331,7 +332,7 @@ static void draw_field(HDC hdc) {
     // Delete the previous level because we don't erase the background with InvalidateRect to avoid flashing
     FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y, "LEVEL", 5);
-    _snprintf(level, 31, "%d", ts->level);
+    _snprintf(level, 31, "%d", brick_s.level);
     TextOutA(hdc, LEVEL_TEXT_X, LEVEL_TEXT_Y + block_size, level, strlen(level));
 
     // Draw lives
@@ -342,7 +343,7 @@ static void draw_field(HDC hdc) {
     // Delete the previous lives because we don't erase the background with InvalidateRect to avoid flashing
     FillRect(hdc, &rect, background_brush);
     TextOutA(hdc, LIVES_TEXT_X, LIVES_TEXT_Y, "LIVES", 5);
-    _snprintf(level, 31, "%d", ts->lives);
+    _snprintf(level, 31, "%d", brick_s.lives);
     TextOutA(hdc, LIVES_TEXT_X, LIVES_TEXT_Y + block_size, level, strlen(level));
 
     // Draw "next" label
@@ -380,7 +381,7 @@ static void draw_field(HDC hdc) {
             rect.right =  rect.left + block_size;
             rect.bottom = rect.top + block_size;
 
-            switch (ts->next[i][j]) {
+            switch (brick_s.next[i][j]) {
                 case BRICK_FIELD_EMPTY:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
                     break;
@@ -426,7 +427,7 @@ static void draw_field(HDC hdc) {
             rect.right = rect.left + block_size;
             rect.bottom = rect.top + block_size;
 
-            switch (ts->playfield[i][j]) {
+            switch (brick_s.playfield[i][j]) {
                 case BRICK_FIELD_EMPTY:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcempty, 0, 0, SRCCOPY);
                     break;
@@ -482,18 +483,17 @@ static void draw_field(HDC hdc) {
 static void invalidate_window_part(HWND hwnd) {
     RECT rc = {0};
 
-    brick_state_t *ts = games[active_game].game_get_state();
-    if (!(ts->rr.clean)) {
+    if (!(brick_s.rr.clean)) {
         LONG offset = block_size / 2;
-        rc.left = offset + ts->rr.left * block_size;
-        rc.right = offset + (ts->rr.right + 1) * block_size;
-        rc.top = offset + ts->rr.top * block_size;
-        rc.bottom = offset + (ts->rr.bottom + 1) * block_size;
+        rc.left = offset + brick_s.rr.left * block_size;
+        rc.right = offset + (brick_s.rr.right + 1) * block_size;
+        rc.top = offset + brick_s.rr.top * block_size;
+        rc.bottom = offset + (brick_s.rr.bottom + 1) * block_size;
         InvalidateRect(hwnd, &rc, FALSE);
-        reset_redraw_rectangle(&ts->rr);
+        reset_redraw_rectangle(&brick_s.rr);
     }
 
-    if (ts->next_changed) {
+    if (brick_s.next_changed) {
         rc.left = NEXT_TEXT_X;
         rc.top = NEXT_TEXT_Y + block_size;
         rc.right =  rc.left + block_size * 4;
@@ -502,31 +502,31 @@ static void invalidate_window_part(HWND hwnd) {
         games[active_game].game_next_figure_accepted();
     }
 
-    if (ts->score_changed) {
+    if (brick_s.score_changed) {
         SetRect(&rc, SCORE_TEXT_X,
                      SCORE_TEXT_Y + block_size,
                      SCORE_TEXT_X + block_size * 4,
                      SCORE_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, FALSE);
-        ts->score_changed = 0;
+        brick_s.score_changed = 0;
     }
 
-    if (ts->level_changed) {
+    if (brick_s.level_changed) {
         SetRect(&rc, LEVEL_TEXT_X,
                      LEVEL_TEXT_Y + block_size,
                      LEVEL_TEXT_X + block_size * 4,
                      LEVEL_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, FALSE);
-        ts->level_changed = 0;
+        brick_s.level_changed = 0;
     }
 
-    if (ts->lives_changed) {
+    if (brick_s.lives_changed) {
         SetRect(&rc, LIVES_TEXT_X,
                      LIVES_TEXT_Y + block_size,
                      LIVES_TEXT_X + block_size * 4,
                      LIVES_TEXT_Y + 2 * block_size);
         InvalidateRect(hwnd, &rc, FALSE);
-        ts->lives_changed = 0;
+        brick_s.lives_changed = 0;
     }
 }
 
@@ -687,13 +687,12 @@ static void change_gfx(int gfx, HWND hwnd) {
         reinitialize_block_bitmaps(hdc);
 
         // Redraw the whole playfield
-        brick_state_t *ts = games[active_game].game_get_state();
-        ts->rr.left = 0;
-        ts->rr.top = 0;
-        ts->rr.right = BRICK_PLAYFIELD_WIDTH;
-        ts->rr.bottom = BRICK_PLAYFIELD_HEIGHT;
-        ts->rr.clean = 0;
-        ts->next_changed = true;
+        brick_s.rr.left = 0;
+        brick_s.rr.top = 0;
+        brick_s.rr.right = BRICK_PLAYFIELD_WIDTH;
+        brick_s.rr.bottom = BRICK_PLAYFIELD_HEIGHT;
+        brick_s.rr.clean = 0;
+        brick_s.next_changed = true;
 
         CheckMenuRadioItem(menu_gfx, GFX_MODE_FIRST, GFX_MODE_LAST, gfx, MF_BYPOSITION);
     }

@@ -7,7 +7,7 @@ void cleananimation_init() {
     cleananimation_line = 0;
 }
 
-int cleananimation(brick_state_t *state) {
+int cleananimation() {
     char line_to_draw = cleananimation_line;
     char field_to_draw = BRICK_FIELD_OCCUPIED;
     int i;
@@ -22,16 +22,16 @@ int cleananimation(brick_state_t *state) {
     }
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
-        state->playfield[i][line_to_draw] = field_to_draw;
+        brick_s.playfield[i][line_to_draw] = field_to_draw;
     }
 
-    state->rr.left = 0;
-    state->rr.right = BRICK_PLAYFIELD_WIDTH - 1;
-    if (state->rr.top > line_to_draw)
-        state->rr.top = line_to_draw;
-    if (state->rr.bottom < line_to_draw)
-        state->rr.bottom = line_to_draw;
-    state->rr.clean = 0;
+    brick_s.rr.left = 0;
+    brick_s.rr.right = BRICK_PLAYFIELD_WIDTH - 1;
+    if (brick_s.rr.top > line_to_draw)
+        brick_s.rr.top = line_to_draw;
+    if (brick_s.rr.bottom < line_to_draw)
+        brick_s.rr.bottom = line_to_draw;
+    brick_s.rr.clean = 0;
 
     cleananimation_line++;
 
