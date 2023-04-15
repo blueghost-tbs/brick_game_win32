@@ -130,11 +130,20 @@ static void sokoban_init_after_cleananimation() {
     up_key_is_pressed = 0;
     down_key_is_pressed = 0;
 
+    // Place the player in the upper left corner
     sokoban.x = 0;
     sokoban.y = 0;
-    sokoban.state = SOKOBAN_STATE_NORMAL;
-
     brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
+    
+    // Place 2 movable boxes somewhere in the middle
+    brick_s.playfield[4][4] = BRICK_FIELD_OCCUPIED_INNER;
+    brick_s.playfield[4][6] = BRICK_FIELD_OCCUPIED_INNER;
+
+    // Place a peace of wall also somewhere in the middle
+    brick_s.playfield[4][10] = BRICK_FIELD_OCCUPIED_OUTER;
+    brick_s.playfield[4][11] = BRICK_FIELD_OCCUPIED_OUTER;
+
+    sokoban.state = SOKOBAN_STATE_NORMAL;  
 }
 
 static void sokoban_right_key_press(void) {
@@ -254,7 +263,11 @@ static void sokoban_game_loop(void) {
 }
 
 static void sokoban_move_right(void) {
-    if (sokoban.x < BRICK_PLAYFIELD_WIDTH - 1) {
+    if (sokoban.x == BRICK_PLAYFIELD_WIDTH - 1)
+        return;
+
+    if (brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_EMPTY) {
+        // Move the player 1 field to the right
         sokoban.x++;
         brick_s.playfield[sokoban.x - 1][sokoban.y] = BRICK_FIELD_EMPTY;
         brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -262,11 +275,33 @@ static void sokoban_move_right(void) {
         brick_s.rr.right = sokoban.x;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        return;
+    }
+
+    if (sokoban.x == BRICK_PLAYFIELD_WIDTH - 2)
+        return;
+
+    if (brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER &&
+        brick_s.playfield[sokoban.x + 2][sokoban.y] == BRICK_FIELD_EMPTY) {
+        // Push the movable box 1 field to the right
+        brick_s.playfield[sokoban.x + 2][sokoban.y] = BRICK_FIELD_OCCUPIED_INNER;
+        brick_s.playfield[sokoban.x + 1][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
+        brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_EMPTY;
+        sokoban.x++;
+        brick_s.rr.left = sokoban.x - 1;
+        brick_s.rr.right = sokoban.x + 1;
+        brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
+        brick_s.rr.clean = 0;
+        return;
     }
 }
 
 static void sokoban_move_left(void) {
-    if (sokoban.x > 0) {
+    if (sokoban.x == 0)
+        return;
+
+    if (brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_EMPTY) {
+        // Move the player 1 field to the left
         sokoban.x--;
         brick_s.playfield[sokoban.x + 1][sokoban.y] = BRICK_FIELD_EMPTY;
         brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -274,11 +309,33 @@ static void sokoban_move_left(void) {
         brick_s.rr.right = sokoban.x + 1;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        return;
+    }
+
+    if (sokoban.x == 1)
+        return;
+
+    if (brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER &&
+        brick_s.playfield[sokoban.x - 2][sokoban.y] == BRICK_FIELD_EMPTY) {
+        // Push the movable box 1 field to the left
+        brick_s.playfield[sokoban.x - 2][sokoban.y] = BRICK_FIELD_OCCUPIED_INNER;
+        brick_s.playfield[sokoban.x - 1][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
+        brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_EMPTY;
+        sokoban.x--;
+        brick_s.rr.left = sokoban.x - 1;
+        brick_s.rr.right = sokoban.x + 1;
+        brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
+        brick_s.rr.clean = 0;
+        return;
     }
 }
 
 static void sokoban_move_up(void) {
-    if (sokoban.y > 0) {
+    if (sokoban.y == 0)
+        return;
+
+    if (brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_EMPTY) {
+        // Move the player 1 field up
         sokoban.y--;
         brick_s.playfield[sokoban.x][sokoban.y + 1] = BRICK_FIELD_EMPTY;
         brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -286,11 +343,33 @@ static void sokoban_move_up(void) {
         brick_s.rr.bottom = sokoban.y + 1;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        return;
+    }
+
+    if (sokoban.y == 1)
+        return;
+
+    if (brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_OCCUPIED_INNER &&
+        brick_s.playfield[sokoban.x][sokoban.y - 2] == BRICK_FIELD_EMPTY) {
+        // Push the movable box 1 field up
+        brick_s.playfield[sokoban.x][sokoban.y - 2] = BRICK_FIELD_OCCUPIED_INNER;
+        brick_s.playfield[sokoban.x][sokoban.y - 1] = BRICK_FIELD_OCCUPIED_ORANGE;
+        brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_EMPTY;
+        sokoban.y--;
+        brick_s.rr.top = sokoban.y - 1;
+        brick_s.rr.bottom = sokoban.y + 1;
+        brick_s.rr.right = brick_s.rr.left = sokoban.x;
+        brick_s.rr.clean = 0;
+        return;
     }
 }
 
 static void sokoban_move_down(void) {
-    if (sokoban.y < BRICK_PLAYFIELD_HEIGHT - 1) {
+    if (sokoban.y == BRICK_PLAYFIELD_HEIGHT - 1)
+        return;
+
+    if (brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_EMPTY) {
+        // Move the player 1 field down
         sokoban.y++;
         brick_s.playfield[sokoban.x][sokoban.y - 1] = BRICK_FIELD_EMPTY;
         brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -298,5 +377,23 @@ static void sokoban_move_down(void) {
         brick_s.rr.bottom = sokoban.y;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        return;
+    }
+
+    if (sokoban.y == BRICK_PLAYFIELD_HEIGHT - 2)
+        return;
+
+    if (brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_OCCUPIED_INNER &&
+        brick_s.playfield[sokoban.x][sokoban.y + 2] == BRICK_FIELD_EMPTY) {
+        // Push the movable box 1 field down
+        brick_s.playfield[sokoban.x][sokoban.y + 2] = BRICK_FIELD_OCCUPIED_INNER;
+        brick_s.playfield[sokoban.x][sokoban.y + 1] = BRICK_FIELD_OCCUPIED_ORANGE;
+        brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_EMPTY;
+        sokoban.y++;
+        brick_s.rr.top = sokoban.y - 1;
+        brick_s.rr.bottom = sokoban.y + 1;
+        brick_s.rr.right = brick_s.rr.left = sokoban.x;
+        brick_s.rr.clean = 0;
+        return;
     }
 }
