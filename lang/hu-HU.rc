@@ -11,6 +11,7 @@ BEGIN
     BEGIN
         MENUITEM "&Tetrisz",       IDM_GAME_TETRIS
         MENUITEM "&Kígyó",         IDM_GAME_SNAKE
+        MENUITEM "&Sokoban",       IDM_GAME_SOKOBAN
     END
     POPUP "&Grafika"
     BEGIN

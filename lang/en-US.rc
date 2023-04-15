@@ -11,6 +11,7 @@ BEGIN
     BEGIN
         MENUITEM "&Tetris",          IDM_GAME_TETRIS
         MENUITEM "&Snake",           IDM_GAME_SNAKE
+        MENUITEM "So&koban",         IDM_GAME_SOKOBAN
     END
     POPUP "G&raphics"
     BEGIN

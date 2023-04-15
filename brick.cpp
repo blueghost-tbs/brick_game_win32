@@ -58,10 +58,11 @@ TCHAR youwontitle[64];
 TCHAR youwon[128];
 
 /* Games */
-#define GAME_FIRST  0
-#define GAME_TETRIS 0
-#define GAME_SNAKE  1
-#define GAME_LAST   1
+#define GAME_FIRST   0
+#define GAME_TETRIS  0
+#define GAME_SNAKE   1
+#define GAME_SOKOBAN 2
+#define GAME_LAST    2
 game_interface_t games[GAME_LAST + 1];
 static short active_game = GAME_LAST;
 
@@ -245,6 +246,9 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                     break;
                 case IDM_GAME_SNAKE:
                     change_game(GAME_SNAKE, hwnd);
+                    break;
+                case IDM_GAME_SOKOBAN:
+                    change_game(GAME_SOKOBAN, hwnd);
                     break;
                 case IDM_GFX_COLORED_TILE:
                     change_gfx(GFX_MODE_COLORED_TILE, hwnd);
@@ -664,6 +668,7 @@ static void set_font_size(HDC hdc, unsigned short size) {
 static void initialize_game_interfaces(void) {
     tetris_init_interface(&games[GAME_TETRIS]);
     snake_init_interface(&games[GAME_SNAKE]);
+    sokoban_init_interface(&games[GAME_SOKOBAN]);
 }
 
 static void change_game(int game, HWND hwnd) {
