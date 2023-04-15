@@ -31,6 +31,7 @@ static int block_border = 2;
 static HBRUSH background_brush;
 static HBITMAP block_bitmap_full = NULL;
 static HBITMAP block_bitmap_full_inner = NULL;
+static HBITMAP block_bitmap_full_inner_small = NULL;
 static HBITMAP block_bitmap_full_outer = NULL;
 static HBITMAP block_bitmap_empty = NULL;
 static HBITMAP block_bitmap_full_lightblue = NULL;
@@ -361,6 +362,8 @@ static void draw_field(HDC hdc) {
     SelectObject(hdcfull_outer, block_bitmap_full_outer);
     HDC hdcfull_inner = CreateCompatibleDC(hdc);
     SelectObject(hdcfull_inner, block_bitmap_full_inner);
+    HDC hdcfull_inner_small = CreateCompatibleDC(hdc);
+    SelectObject(hdcfull_inner_small, block_bitmap_full_inner_small);
 
     HDC hdcfull_lightblue = CreateCompatibleDC(hdc);
     SelectObject(hdcfull_lightblue, block_bitmap_full_lightblue);
@@ -394,6 +397,9 @@ static void draw_field(HDC hdc) {
                     break;
                 case BRICK_FIELD_OCCUPIED_INNER:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner, 0, 0, SRCCOPY);
+                    break;
+                case BRICK_FIELD_OCCUPIED_INNER_SMALL:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner_small, 0, 0, SRCCOPY);
                     break;
                 case BRICK_FIELD_OCCUPIED_OUTER:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_outer, 0, 0, SRCCOPY);
@@ -441,6 +447,9 @@ static void draw_field(HDC hdc) {
                 case BRICK_FIELD_OCCUPIED_INNER:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner, 0, 0, SRCCOPY);
                     break;
+                case BRICK_FIELD_OCCUPIED_INNER_SMALL:
+                    BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_inner_small, 0, 0, SRCCOPY);
+                    break;
                 case BRICK_FIELD_OCCUPIED_OUTER:
                     BitBlt(hdc, rect.left, rect.top, block_size, block_size, hdcfull_outer, 0, 0, SRCCOPY);
                     break;
@@ -472,6 +481,7 @@ static void draw_field(HDC hdc) {
     DeleteDC(hdcfull);
     DeleteDC(hdcempty);
     DeleteDC(hdcfull_inner);
+    DeleteDC(hdcfull_inner_small);
     DeleteDC(hdcfull_outer);
     DeleteDC(hdcfull_lightblue);
     DeleteDC(hdcfull_darkblue);
@@ -597,6 +607,8 @@ static void reinitialize_block_bitmaps(HDC hdc) {
         DeleteObject(block_bitmap_empty);
     if (block_bitmap_full_inner != NULL)
         DeleteObject(block_bitmap_full_inner);
+    if (block_bitmap_full_inner_small != NULL)
+        DeleteObject(block_bitmap_full_inner_small);
     if (block_bitmap_full_outer != NULL)
         DeleteObject(block_bitmap_full_outer);
     if (block_bitmap_full_lightblue != NULL)
@@ -645,6 +657,10 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     memset(bitmap_full, 192, block_size * block_size * 4);
     gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_MAGENTA, bitmap_full);
     block_bitmap_full_magenta = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+
+    memset(bitmap_full, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER_SMALL, bitmap_full);
+    block_bitmap_full_inner_small = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
 
     block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_empty, pbmi, DIB_RGB_COLORS);
     block_bitmap_full_outer = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full_outer, pbmi, DIB_RGB_COLORS);

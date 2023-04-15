@@ -143,6 +143,9 @@ static void sokoban_init_after_cleananimation() {
     brick_s.playfield[4][10] = BRICK_FIELD_OCCUPIED_OUTER;
     brick_s.playfield[4][11] = BRICK_FIELD_OCCUPIED_OUTER;
 
+    // Place a target block in the bottom right corner
+    brick_s.playfield[BRICK_PLAYFIELD_WIDTH - 1][BRICK_PLAYFIELD_HEIGHT - 1] = BRICK_FIELD_OCCUPIED_INNER_SMALL;
+
     sokoban.state = SOKOBAN_STATE_NORMAL;  
 }
 
