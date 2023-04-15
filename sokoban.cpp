@@ -1,6 +1,7 @@
 #include "brick.h"
 #include "cleananimation.h"
 #include "winanimation.h"
+#include "sokoban_levels.h"
 
 #include <windows.h>
 #include <time.h>
@@ -25,6 +26,7 @@ static void sokoban_move_right(void);
 static void sokoban_move_left(void);
 static void sokoban_move_up(void);
 static void sokoban_move_down(void);
+static void sokoban_restore_storage_locations(void);
 
 /* keyboard states and times */
 static char left_key_is_pressed = 0;
@@ -98,8 +100,22 @@ static void sokoban_init_after_cleananimation() {
 
     for (i = 0; i < BRICK_PLAYFIELD_WIDTH; i++) {
         for (j = 0; j < BRICK_PLAYFIELD_HEIGHT; j++) {
-            brick_s.playfield[i][j] = BRICK_FIELD_EMPTY;
+            switch (sokoban_levels[brick_s.level - 1].level[j][i]) {
+                case 0:
+                    brick_s.playfield[i][j] = BRICK_FIELD_EMPTY;
+                    break;
+                case 1:
+                    brick_s.playfield[i][j] = BRICK_FIELD_OCCUPIED_OUTER;
+                    break;
+                case 2:
+                    brick_s.playfield[i][j] = BRICK_FIELD_OCCUPIED_INNER;
+                    break;
+            }
         }
+    }
+
+    for (i = 0; i < sokoban_levels[brick_s.level - 1].storage_locations_num; i++) {
+        brick_s.playfield[sokoban_levels[brick_s.level - 1].storage_locations[i].x][sokoban_levels[brick_s.level - 1].storage_locations[i].y] = BRICK_FIELD_OCCUPIED_INNER_SMALL;
     }
 
     for (i = 0; i < 4; i++) {
@@ -130,21 +146,9 @@ static void sokoban_init_after_cleananimation() {
     up_key_is_pressed = 0;
     down_key_is_pressed = 0;
 
-    // Place the player in the upper left corner
-    sokoban.x = 0;
-    sokoban.y = 0;
+    sokoban.x = sokoban_levels[brick_s.level - 1].player_start_location.x;
+    sokoban.y = sokoban_levels[brick_s.level - 1].player_start_location.y;
     brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
-    
-    // Place 2 movable boxes somewhere in the middle
-    brick_s.playfield[4][4] = BRICK_FIELD_OCCUPIED_INNER;
-    brick_s.playfield[4][6] = BRICK_FIELD_OCCUPIED_INNER;
-
-    // Place a peace of wall also somewhere in the middle
-    brick_s.playfield[4][10] = BRICK_FIELD_OCCUPIED_OUTER;
-    brick_s.playfield[4][11] = BRICK_FIELD_OCCUPIED_OUTER;
-
-    // Place a target block in the bottom right corner
-    brick_s.playfield[BRICK_PLAYFIELD_WIDTH - 1][BRICK_PLAYFIELD_HEIGHT - 1] = BRICK_FIELD_OCCUPIED_INNER_SMALL;
 
     sokoban.state = SOKOBAN_STATE_NORMAL;  
 }
@@ -269,7 +273,8 @@ static void sokoban_move_right(void) {
     if (sokoban.x == BRICK_PLAYFIELD_WIDTH - 1)
         return;
 
-    if (brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_EMPTY) {
+    if (brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_EMPTY ||
+        brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER_SMALL) {
         // Move the player 1 field to the right
         sokoban.x++;
         brick_s.playfield[sokoban.x - 1][sokoban.y] = BRICK_FIELD_EMPTY;
@@ -278,6 +283,7 @@ static void sokoban_move_right(void) {
         brick_s.rr.right = sokoban.x;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 
@@ -285,7 +291,8 @@ static void sokoban_move_right(void) {
         return;
 
     if (brick_s.playfield[sokoban.x + 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER &&
-        brick_s.playfield[sokoban.x + 2][sokoban.y] == BRICK_FIELD_EMPTY) {
+        (brick_s.playfield[sokoban.x + 2][sokoban.y] == BRICK_FIELD_EMPTY ||
+         brick_s.playfield[sokoban.x + 2][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER_SMALL)) {
         // Push the movable box 1 field to the right
         brick_s.playfield[sokoban.x + 2][sokoban.y] = BRICK_FIELD_OCCUPIED_INNER;
         brick_s.playfield[sokoban.x + 1][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -295,6 +302,7 @@ static void sokoban_move_right(void) {
         brick_s.rr.right = sokoban.x + 1;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 }
@@ -303,7 +311,8 @@ static void sokoban_move_left(void) {
     if (sokoban.x == 0)
         return;
 
-    if (brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_EMPTY) {
+    if (brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_EMPTY ||
+        brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER_SMALL) {
         // Move the player 1 field to the left
         sokoban.x--;
         brick_s.playfield[sokoban.x + 1][sokoban.y] = BRICK_FIELD_EMPTY;
@@ -312,6 +321,7 @@ static void sokoban_move_left(void) {
         brick_s.rr.right = sokoban.x + 1;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 
@@ -319,7 +329,8 @@ static void sokoban_move_left(void) {
         return;
 
     if (brick_s.playfield[sokoban.x - 1][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER &&
-        brick_s.playfield[sokoban.x - 2][sokoban.y] == BRICK_FIELD_EMPTY) {
+        (brick_s.playfield[sokoban.x - 2][sokoban.y] == BRICK_FIELD_EMPTY ||
+         brick_s.playfield[sokoban.x - 2][sokoban.y] == BRICK_FIELD_OCCUPIED_INNER_SMALL)) {
         // Push the movable box 1 field to the left
         brick_s.playfield[sokoban.x - 2][sokoban.y] = BRICK_FIELD_OCCUPIED_INNER;
         brick_s.playfield[sokoban.x - 1][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -329,6 +340,7 @@ static void sokoban_move_left(void) {
         brick_s.rr.right = sokoban.x + 1;
         brick_s.rr.top = brick_s.rr.bottom = sokoban.y;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 }
@@ -337,7 +349,8 @@ static void sokoban_move_up(void) {
     if (sokoban.y == 0)
         return;
 
-    if (brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_EMPTY) {
+    if (brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_EMPTY ||
+        brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_OCCUPIED_INNER_SMALL) {
         // Move the player 1 field up
         sokoban.y--;
         brick_s.playfield[sokoban.x][sokoban.y + 1] = BRICK_FIELD_EMPTY;
@@ -346,6 +359,7 @@ static void sokoban_move_up(void) {
         brick_s.rr.bottom = sokoban.y + 1;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 
@@ -353,7 +367,8 @@ static void sokoban_move_up(void) {
         return;
 
     if (brick_s.playfield[sokoban.x][sokoban.y - 1] == BRICK_FIELD_OCCUPIED_INNER &&
-        brick_s.playfield[sokoban.x][sokoban.y - 2] == BRICK_FIELD_EMPTY) {
+        (brick_s.playfield[sokoban.x][sokoban.y - 2] == BRICK_FIELD_EMPTY ||
+         brick_s.playfield[sokoban.x][sokoban.y - 2] == BRICK_FIELD_OCCUPIED_INNER_SMALL)) {
         // Push the movable box 1 field up
         brick_s.playfield[sokoban.x][sokoban.y - 2] = BRICK_FIELD_OCCUPIED_INNER;
         brick_s.playfield[sokoban.x][sokoban.y - 1] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -363,6 +378,7 @@ static void sokoban_move_up(void) {
         brick_s.rr.bottom = sokoban.y + 1;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 }
@@ -371,7 +387,8 @@ static void sokoban_move_down(void) {
     if (sokoban.y == BRICK_PLAYFIELD_HEIGHT - 1)
         return;
 
-    if (brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_EMPTY) {
+    if (brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_EMPTY ||
+        brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_OCCUPIED_INNER_SMALL) {
         // Move the player 1 field down
         sokoban.y++;
         brick_s.playfield[sokoban.x][sokoban.y - 1] = BRICK_FIELD_EMPTY;
@@ -380,6 +397,7 @@ static void sokoban_move_down(void) {
         brick_s.rr.bottom = sokoban.y;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
     }
 
@@ -387,7 +405,8 @@ static void sokoban_move_down(void) {
         return;
 
     if (brick_s.playfield[sokoban.x][sokoban.y + 1] == BRICK_FIELD_OCCUPIED_INNER &&
-        brick_s.playfield[sokoban.x][sokoban.y + 2] == BRICK_FIELD_EMPTY) {
+        (brick_s.playfield[sokoban.x][sokoban.y + 2] == BRICK_FIELD_EMPTY ||
+         brick_s.playfield[sokoban.x][sokoban.y + 2] == BRICK_FIELD_OCCUPIED_INNER_SMALL)) {
         // Push the movable box 1 field down
         brick_s.playfield[sokoban.x][sokoban.y + 2] = BRICK_FIELD_OCCUPIED_INNER;
         brick_s.playfield[sokoban.x][sokoban.y + 1] = BRICK_FIELD_OCCUPIED_ORANGE;
@@ -397,6 +416,20 @@ static void sokoban_move_down(void) {
         brick_s.rr.bottom = sokoban.y + 1;
         brick_s.rr.right = brick_s.rr.left = sokoban.x;
         brick_s.rr.clean = 0;
+        sokoban_restore_storage_locations();
         return;
+    }
+}
+
+static void sokoban_restore_storage_locations(void) {
+    int num = sokoban_levels[brick_s.level - 1].storage_locations_num;
+    int i;
+    int x, y;
+
+    for (i = 0; i < num; i++) {
+        x = sokoban_levels[brick_s.level - 1].storage_locations[i].x;
+        y = sokoban_levels[brick_s.level - 1].storage_locations[i].y;
+        if (brick_s.playfield[x][y] == BRICK_FIELD_EMPTY)
+            brick_s.playfield[x][y] = BRICK_FIELD_OCCUPIED_INNER_SMALL;
     }
 }
