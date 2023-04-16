@@ -106,6 +106,10 @@ SOURCE=.\snake.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\sokoban.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\tetris.cpp
 # End Source File
 # Begin Source File
@@ -139,6 +143,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\snake_levels.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sokoban_levels.h
 # End Source File
 # Begin Source File
 
