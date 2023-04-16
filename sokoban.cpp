@@ -54,11 +54,13 @@ static keypress_store_t keypress_store = { 0, 0, 0, 0 };
 /* Game states */
 #define SOKOBAN_STATE_NORMAL         0
 #define SOKOBAN_STATE_CLEANANIMATION 1
+#define SOKOBAN_STATE_WINANIMATION   2
 
 typedef struct {
     char x;
     char y;
     char state;
+    char level_done;
 } sokoban_t;
 
 static sokoban_t sokoban = { SOKOBAN_STATE_NORMAL };
@@ -91,7 +93,7 @@ static void sokoban_init(void) {
     sokoban.state = SOKOBAN_STATE_CLEANANIMATION;
     brick_s.level = 1;
     brick_s.score = 0;
-    brick_s.lives = 9;
+    brick_s.lives = 0;
     cleananimation_init();
 }
 
@@ -124,11 +126,8 @@ static void sokoban_init_after_cleananimation() {
         }
     }
 
-    brick_s.score = 0;
     brick_s.score_changed = 1;
-    brick_s.level = 1;
     brick_s.level_changed = 1;
-    brick_s.lives = 0;
     brick_s.lives_changed = 1;
     brick_s.game_over_notification_flag = false;
     brick_s.winning_notification_flag = false;
@@ -145,9 +144,14 @@ static void sokoban_init_after_cleananimation() {
     right_key_is_pressed = 0;
     up_key_is_pressed = 0;
     down_key_is_pressed = 0;
+    keypress_store.right = 0;
+    keypress_store.left = 0;
+    keypress_store.up = 0;
+    keypress_store.down = 0;
 
     sokoban.x = sokoban_levels[brick_s.level - 1].player_start_location.x;
     sokoban.y = sokoban_levels[brick_s.level - 1].player_start_location.y;
+    sokoban.level_done = 0;
     brick_s.playfield[sokoban.x][sokoban.y] = BRICK_FIELD_OCCUPIED_ORANGE;
 
     sokoban.state = SOKOBAN_STATE_NORMAL;  
@@ -210,6 +214,26 @@ static void sokoban_game_loop(void) {
         cleananimation();
         if (cleananimation() == CLEANANIMATION_DONE)
             sokoban_init_after_cleananimation();
+        return;
+    }
+
+    if (sokoban.state == SOKOBAN_STATE_WINANIMATION) {
+        winanimation();
+        return;
+    }
+
+    if (sokoban.level_done) {
+        brick_s.score += sokoban_levels[brick_s.level - 1].storage_locations_num * 100;
+        brick_s.score_changed = 1;
+        if (brick_s.level > SOKOBAN_LEVELS - 1) {
+            winanimation_init();
+            sokoban.state = SOKOBAN_STATE_WINANIMATION;
+            brick_s.winning_notification_flag = true;
+            return;
+        }
+        brick_s.level++;
+        sokoban.state = SOKOBAN_STATE_CLEANANIMATION;
+        cleananimation_init();
         return;
     }
 
@@ -425,11 +449,17 @@ static void sokoban_restore_storage_locations(void) {
     int num = sokoban_levels[brick_s.level - 1].storage_locations_num;
     int i;
     int x, y;
+    int remaining = num;
 
     for (i = 0; i < num; i++) {
         x = sokoban_levels[brick_s.level - 1].storage_locations[i].x;
         y = sokoban_levels[brick_s.level - 1].storage_locations[i].y;
-        if (brick_s.playfield[x][y] == BRICK_FIELD_EMPTY)
+        if (brick_s.playfield[x][y] == BRICK_FIELD_OCCUPIED_INNER)
+            remaining--;
+        else if (brick_s.playfield[x][y] == BRICK_FIELD_EMPTY)
             brick_s.playfield[x][y] = BRICK_FIELD_OCCUPIED_INNER_SMALL;
     }
+
+    if (remaining == 0)
+        sokoban.level_done = 1;
 }
