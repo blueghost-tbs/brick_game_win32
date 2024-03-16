@@ -19,7 +19,7 @@ static void load_resources(HINSTANCE hInst);
 static void draw_field(HDC hdc);
 static void invalidate_window_part(HWND hwnd);
 static void reinitialize_block_bitmaps(HDC hdc);
-static void set_font_size(HDC hdc, unsigned short size);
+static void set_font_size(HDC hdc, unsigned short size, bool always_96_dpi);
 static void initialize_game_interfaces(void);
 static void change_game(int game, HWND hwnd);
 static void change_gfx(int gfx, HWND hwnd);
@@ -204,7 +204,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             if (block_border < 2)
                 block_border = 2;
             reinitialize_block_bitmaps(hdc);
-            set_font_size(hdc, block_size / 2);
+            set_font_size(hdc, block_size / 2, true);
             ReleaseDC(hwnd, hdc);
             return 0;
         }
@@ -673,8 +673,13 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     free(bitmap_full_outer);
 }
 
-static void set_font_size(HDC hdc, unsigned short size) {
-    long lfHeight = -MulDiv(size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+static void set_font_size(HDC hdc, unsigned short size, bool always_96_dpi) {
+    int dpi = 96;
+
+    if (!always_96_dpi)
+        dpi = GetDeviceCaps(hdc, LOGPIXELSY);
+
+    long lfHeight = -MulDiv(size, dpi, 72);
 
     if (hf != NULL)
         DeleteObject(hf);
