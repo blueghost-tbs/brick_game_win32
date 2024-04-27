@@ -1,0 +1,13 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: microsoft/setup-msbuild@v2
+      - name: build
+        run: msbuild.exe /property:configuration=Release
+
