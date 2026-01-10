@@ -53,6 +53,7 @@ typedef struct {
     void (*game_down_key_release)(void);
     void (*game_next_figure_accepted)(void);
     void (*game_loop)(void);
+    void (*game_restart_level)(void);
 } game_interface_t;
 
 void reset_redraw_rectangle(redraw_rectangle_t *rr);

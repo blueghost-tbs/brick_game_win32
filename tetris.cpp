@@ -18,6 +18,7 @@ static void tetris_down_key_press(void);
 static void tetris_down_key_release(void);
 static void tetris_next_figure_accepted(void);
 static void tetris_game_loop(void);
+static void tetris_restart_level(void);
 
 /* Other static function prototypes */
 static void tetris_init_after_cleananimation(void);
@@ -108,6 +109,7 @@ void tetris_init_interface(game_interface_t *iface) {
     iface->game_down_key_release = tetris_down_key_release;
     iface->game_next_figure_accepted = tetris_next_figure_accepted;
     iface->game_loop = tetris_game_loop;
+    iface->game_restart_level = tetris_restart_level;
 }
 
 /******************************************************************************
@@ -317,6 +319,9 @@ static void tetris_game_loop(void) {
             down_key_press_start_time = t;
         }
     }
+}
+
+static void tetris_restart_level(void) {
 }
 
 static void tetris_tick(void) {

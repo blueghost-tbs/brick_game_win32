@@ -19,6 +19,7 @@ static void sokoban_down_key_press(void);
 static void sokoban_down_key_release(void);
 static void sokoban_next_figure_accepted(void);
 static void sokoban_game_loop(void);
+static void sokoban_restart_level(void);
 
 /* Other static function prototypes */
 static void sokoban_init_after_cleananimation();
@@ -80,6 +81,7 @@ void sokoban_init_interface(game_interface_t* iface) {
     iface->game_down_key_release = sokoban_down_key_release;
     iface->game_next_figure_accepted = sokoban_next_figure_accepted;
     iface->game_loop = sokoban_game_loop;
+    iface->game_restart_level = sokoban_restart_level;
 }
 
 /******************************************************************************
@@ -291,6 +293,11 @@ static void sokoban_game_loop(void) {
         sokoban_move_down();
         keypress_store.down = 0;
     }
+}
+
+static void sokoban_restart_level(void) {
+    sokoban.state = SOKOBAN_STATE_CLEANANIMATION;
+    cleananimation_init();
 }
 
 static void sokoban_move_right(void) {

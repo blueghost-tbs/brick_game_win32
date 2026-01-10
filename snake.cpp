@@ -18,6 +18,7 @@ static void snake_down_key_press(void);
 static void snake_down_key_release(void);
 static void snake_next_figure_accepted(void);
 static void snake_game_loop(void);
+static void snake_restart_level(void);
 
 /* Other static function prototypes */
 static void snake_init_after_cleananimation();
@@ -65,6 +66,7 @@ void snake_init_interface(game_interface_t *iface) {
     iface->game_down_key_release = snake_down_key_release;
     iface->game_next_figure_accepted = snake_next_figure_accepted;
     iface->game_loop = snake_game_loop;
+    iface->game_restart_level = snake_restart_level;
 }
 
 /******************************************************************************
@@ -217,6 +219,9 @@ static void snake_game_loop(void) {
     while (t > snake_timer + speed) {
         snake_timer += speed;
     }
+}
+
+static void snake_restart_level(void) {
 }
 
 static void snake_tick(void) {

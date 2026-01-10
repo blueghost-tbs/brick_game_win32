@@ -5,6 +5,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&New game",        IDM_FILE_NEW_GAME
+        MENUITEM "&Restart Level",   IDM_FILE_RESTART_LEVEL
         MENUITEM "&Exit",            IDM_FILE_EXIT
     END
     POPUP "&Game"

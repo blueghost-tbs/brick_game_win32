@@ -4,14 +4,15 @@
 #define IDI_ICON                10001
 
 #define IDM_FILE_NEW_GAME       40001
-#define IDM_FILE_EXIT           40002
-#define IDM_HELP_ABOUT          40003
-#define IDM_GAME_TETRIS         40004
-#define IDM_GAME_SNAKE          40005
-#define IDM_GAME_SOKOBAN        40006
-#define IDM_GFX_MONOCHROME      40007
-#define IDM_GFX_COLORED_TILE    40008
-#define IDM_GFX_COLORED_PYRAMID 40009
+#define IDM_FILE_RESTART_LEVEL  40002
+#define IDM_FILE_EXIT           40003
+#define IDM_HELP_ABOUT          40004
+#define IDM_GAME_TETRIS         40005
+#define IDM_GAME_SNAKE          40006
+#define IDM_GAME_SOKOBAN        40007
+#define IDM_GFX_MONOCHROME      40008
+#define IDM_GFX_COLORED_TILE    40009
+#define IDM_GFX_COLORED_PYRAMID 40010
 
 #define IDS_GAMEOVERTITLE       50001
 #define IDS_GAMEOVER            50002
