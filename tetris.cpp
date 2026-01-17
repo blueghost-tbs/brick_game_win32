@@ -70,7 +70,7 @@ static struct {
     char line;
     char cleared_lines;
     char lines_since_level_increase;
-} ts = {TS_NORMAL, 0, 0};
+} ts = {TS_NORMAL, 0, 0, 0};
 
 /*
  * 1 line  - 100 points

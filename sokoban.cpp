@@ -64,7 +64,7 @@ typedef struct {
     char level_done;
 } sokoban_t;
 
-static sokoban_t sokoban = { SOKOBAN_STATE_NORMAL };
+static sokoban_t sokoban = { 1, 1, SOKOBAN_STATE_NORMAL, 0 };
 
 /******************************************************************************
  * Exported functions.
