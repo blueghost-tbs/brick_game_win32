@@ -47,7 +47,7 @@ typedef struct {
     char collected_food;
 } snake_t;
 
-static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, SNAKE_STATE_NORMAL, 0, 2, 0};
+static snake_t snake = {{{5, 0}, {5, 1}, {5, 2}}, 1, 0, SNAKE_MOVE_DOWN, -1, 0, SNAKE_STATE_NORMAL, 0, 2, 0};
 static segment_t food = {0, 0};
 static unsigned int snake_timer = 0;
 
@@ -119,6 +119,7 @@ static void snake_init_after_cleananimation() {
     snake.segments[1] = snake_levels[brick_s.level - 1].start_segments[1];
     snake.segments[2] = snake_levels[brick_s.level - 1].start_segments[2];
     snake.move = snake_levels[brick_s.level - 1].start_move;
+    snake.turn_in_progress = 0;
     snake.delayed_move = -1;
     snake.state = SNAKE_STATE_NORMAL;
     snake.increase_length = 0;
