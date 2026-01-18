@@ -103,7 +103,7 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
                 fill_colored_tile(size, bitmap, 140, 0, 140, 1, 1, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER:
-                fill_colored_tile(size, bitmap, 0, 140, 0, 1, 0, 0);
+                fill_colored_tile(size, bitmap, 0, 140, 140, 1, 0, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER_SMALL:
                 fill_colored_tile(size, bitmap, 0, 140, 0, 1, 0, 1);
@@ -142,7 +142,7 @@ void gfx_get_brick(int size, int color, unsigned char *bitmap) {
                 fill_colored_pyramid(size, bitmap, 145, 5, 145, 1, 1, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER:
-                fill_colored_pyramid(size, bitmap, 5, 145, 5, 1, 0, 0);
+                fill_colored_pyramid(size, bitmap, 5, 145, 145, 1, 0, 0);
                 break;
             case BRICK_FIELD_OCCUPIED_INNER_SMALL:
                 fill_colored_pyramid(size, bitmap, 5, 145, 5, 1, 0, 1);
