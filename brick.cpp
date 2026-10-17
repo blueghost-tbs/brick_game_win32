@@ -281,7 +281,6 @@ static void load_resources(HINSTANCE hInst) {
 static void draw_field(HDC hdc) {
     int i, j;
     RECT rect;
-    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
     LOGBRUSH lbrush = {BS_SOLID, RGB(0, 0, 0), 0};
     LOGBRUSH lbrush_gray = {BS_SOLID, RGB(128, 128, 128), 0};
     HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_SQUARE | PS_JOIN_BEVEL, block_border, &lbrush, 0, NULL);
