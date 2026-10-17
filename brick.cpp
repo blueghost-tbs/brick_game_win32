@@ -190,6 +190,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         }
 
         case WM_SIZE: {
+            if (wParam == SIZE_MINIMIZED)
+                return 0;
             /* Recalculate block size */
             hdc = GetDC(hwnd);
             RECT cr;
