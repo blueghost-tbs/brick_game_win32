@@ -548,34 +548,12 @@ static void invalidate_window_part(HWND hwnd) {
 }
 
 static void reinitialize_block_bitmaps(HDC hdc) {
-    // Memory allocation for new bitmaps
-    unsigned char *bitmap_full = (unsigned char*)malloc(block_size * block_size * 4);
-    if (bitmap_full == NULL) {
+    // Memory allocation for the bitmap buffer
+    unsigned char * bitmap_buffer = (unsigned char*)malloc(block_size * block_size * 4);
+    if (bitmap_buffer == NULL) {
         // Not enough memory!
         return;
     }
-
-    unsigned char *bitmap_empty = (unsigned char*)malloc(block_size * block_size * 4);
-    if (bitmap_empty == NULL) {
-        // Not enough memory!
-        free(bitmap_empty);
-        return;
-    }
-    memset(bitmap_empty, 192, block_size * block_size * 4);
-
-    unsigned char *bitmap_full_inner = (unsigned char*)malloc(block_size * block_size * 4);
-    if (bitmap_full_inner == NULL) {
-        // Not enough memory!
-        return;
-    }
-    memset(bitmap_full_inner, 192, block_size * block_size * 4);
-
-    unsigned char *bitmap_full_outer = (unsigned char*)malloc(block_size * block_size * 4);
-    if (bitmap_full_outer == NULL) {
-        // Not enough memory!
-        return;
-    }
-    memset(bitmap_full_outer, 192, block_size * block_size * 4);
 
     // Create and initialize BITMAPINFOHEADER for the 32-bit image
     BITMAPINFOHEADER bmih;
@@ -587,21 +565,6 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     bmih.biSize = sizeof(BITMAPINFOHEADER);
     bmih.biPlanes = 1;
     bmih.biSizeImage = block_size * block_size * 4;
-
-    // Create and initialize BITMAPINFO for the 32-bit image
-    PBITMAPINFO pbmi = (PBITMAPINFO)calloc(1, sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD));
-    pbmi->bmiHeader.biWidth = block_size;
-    pbmi->bmiHeader.biHeight = block_size;
-    pbmi->bmiHeader.biBitCount = 32;
-    pbmi->bmiHeader.biCompression = BI_RGB;
-    pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    pbmi->bmiHeader.biPlanes = 1;
-    pbmi->bmiHeader.biSizeImage = block_size * block_size * 4;
-
-    // Fill bitmaps
-    gfx_get_brick(block_size, BRICK_FIELD_EMPTY, bitmap_empty);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER, bitmap_full_inner);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_OUTER, bitmap_full_outer);
 
     // Delete previous bitmaps
     if (block_bitmap_full != NULL)
@@ -629,51 +592,56 @@ static void reinitialize_block_bitmaps(HDC hdc) {
     if (block_bitmap_full_magenta != NULL)
         DeleteObject(block_bitmap_full_magenta);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED, bitmap_full);
-    block_bitmap_full = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    // Fill bitmaps
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_EMPTY, bitmap_buffer);
+    block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_LIGHTBLUE, bitmap_full);
-    block_bitmap_full_lightblue = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER, bitmap_buffer);
+    block_bitmap_full_inner = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_DARKBLUE, bitmap_full);
-    block_bitmap_full_darkblue = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_OUTER, bitmap_buffer);
+    block_bitmap_full_outer = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_ORANGE, bitmap_full);
-    block_bitmap_full_orange = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED, bitmap_buffer);
+    block_bitmap_full = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_YELLOW, bitmap_full);
-    block_bitmap_full_yellow = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_LIGHTBLUE, bitmap_buffer);
+    block_bitmap_full_lightblue = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_GREEN, bitmap_full);
-    block_bitmap_full_green = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_DARKBLUE, bitmap_buffer);
+    block_bitmap_full_darkblue = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_RED, bitmap_full);
-    block_bitmap_full_red = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_ORANGE, bitmap_buffer);
+    block_bitmap_full_orange = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_MAGENTA, bitmap_full);
-    block_bitmap_full_magenta = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_YELLOW, bitmap_buffer);
+    block_bitmap_full_yellow = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    memset(bitmap_full, 192, block_size * block_size * 4);
-    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER_SMALL, bitmap_full);
-    block_bitmap_full_inner_small = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_GREEN, bitmap_buffer);
+    block_bitmap_full_green = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    block_bitmap_empty = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_empty, pbmi, DIB_RGB_COLORS);
-    block_bitmap_full_outer = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full_outer, pbmi, DIB_RGB_COLORS);
-    block_bitmap_full_inner = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_full_inner, pbmi, DIB_RGB_COLORS);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_RED, bitmap_buffer);
+    block_bitmap_full_red = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
 
-    free(pbmi);
-    free(bitmap_full);
-    free(bitmap_empty);
-    free(bitmap_full_inner);
-    free(bitmap_full_outer);
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_MAGENTA, bitmap_buffer);
+    block_bitmap_full_magenta = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
+
+    memset(bitmap_buffer, 192, block_size * block_size * 4);
+    gfx_get_brick(block_size, BRICK_FIELD_OCCUPIED_INNER_SMALL, bitmap_buffer);
+    block_bitmap_full_inner_small = CreateDIBitmap(hdc, &bmih, CBM_INIT, bitmap_buffer, (BITMAPINFO*)&bmih, DIB_RGB_COLORS);
+
+    free(bitmap_buffer);
 }
 
 static void set_font_size(HDC hdc, unsigned short size, bool always_96_dpi) {
