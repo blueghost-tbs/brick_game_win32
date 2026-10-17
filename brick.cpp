@@ -231,6 +231,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                 games[active_game].game_down_key_release();
             return 0;
 
+        case WM_KILLFOCUS:
+            games[active_game].game_right_key_release();
+            games[active_game].game_left_key_release();
+            games[active_game].game_up_key_release();
+            games[active_game].game_down_key_release();
+            return 0;
+
         case WM_COMMAND:
             switch (LOWORD (wParam)) {
                 case IDM_FILE_EXIT:
