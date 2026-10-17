@@ -281,6 +281,7 @@ static void load_resources(HINSTANCE hInst) {
 static void draw_field(HDC hdc) {
     int i, j;
     RECT rect;
+    HGDIOBJ original_object = NULL;
     LOGBRUSH lbrush = {BS_SOLID, RGB(0, 0, 0), 0};
     LOGBRUSH lbrush_gray = {BS_SOLID, RGB(128, 128, 128), 0};
     HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_SQUARE | PS_JOIN_BEVEL, block_border, &lbrush, 0, NULL);
@@ -289,7 +290,7 @@ static void draw_field(HDC hdc) {
     char level[32] = {'\0',};
 
     // Draw margin rectangle
-    SelectObject(hdc, pen);
+    original_object = SelectObject(hdc, pen);
     MoveToEx(hdc, block_size / 4, block_size / 4, NULL);
     LineTo(hdc, block_size * (BRICK_PLAYFIELD_WIDTH + 1) - block_size / 4, block_size / 4);
     LineTo(hdc, block_size * (BRICK_PLAYFIELD_WIDTH + 1) - block_size / 4, block_size * (BRICK_PLAYFIELD_HEIGHT + 1) - block_size / 4);
@@ -479,6 +480,8 @@ static void draw_field(HDC hdc) {
             }
         }
     }
+
+    SelectObject(hdc, original_object);
 
     DeleteDC(hdcfull);
     DeleteDC(hdcempty);
