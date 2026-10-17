@@ -725,4 +725,6 @@ static void change_gfx(int gfx, HWND hwnd) {
 
         CheckMenuRadioItem(menu_gfx, GFX_MODE_FIRST, GFX_MODE_LAST, gfx, MF_BYPOSITION);
     }
+
+    ReleaseDC(hwnd, hdc);
 }
