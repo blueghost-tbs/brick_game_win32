@@ -46,11 +46,11 @@ static HFONT hf = NULL;
 #define SCORE_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
 #define SCORE_TEXT_Y  (block_size / 4)
 #define LEVEL_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
-#define LEVEL_TEXT_Y  (block_size / 4) + block_size * 2
+#define LEVEL_TEXT_Y  (block_size / 4 + block_size * 2)
 #define LIVES_TEXT_X  (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
-#define LIVES_TEXT_Y  (block_size / 4) + block_size * 4
+#define LIVES_TEXT_Y  (block_size / 4 + block_size * 4)
 #define NEXT_TEXT_X   (block_size * (BRICK_PLAYFIELD_WIDTH + 1) + 8)
-#define NEXT_TEXT_Y   (block_size / 4) + block_size * 8
+#define NEXT_TEXT_Y   (block_size / 4 + block_size * 8)
 
 /* String resources */
 TCHAR gameovertitle[64];
